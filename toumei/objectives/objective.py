@@ -10,8 +10,9 @@ class Objective(object):
     def __str__(self):
         return f"Objective({self.model})"
 
-    def __call__(self, *args, **kwargs):
-        return NotImplementedError
+    def __call__(self, x):
+        _ = self.model(x)
+        return self.forward(self.activation)
 
     def attach(self, model: nn.Module, layer: str, name: str):
         self.model = model
@@ -25,4 +26,6 @@ class Objective(object):
 
         self.model[layer].register_forward_hook(create_hook(name))
 
+    def forward(self, activation):
+        return NotImplementedError
 

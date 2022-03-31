@@ -1,4 +1,7 @@
+import torch
+
 import toumei.probe as p
+import toumei.objectives as objective
 import torch.nn as nn
 import torchvision.models as models
 
@@ -28,3 +31,11 @@ class Net(nn.Module):
 model2 = Net()
 inception = models.alexnet()
 p.print_modules(inception)
+objective = objective.Sequential(
+    objective.Layer("features.0"),
+    objective.Neuron("features.0:0:0")
+)
+
+objective.attach(inception)
+inception(torch.rand((1, 3, 128, 128)))
+print(objective.activation)

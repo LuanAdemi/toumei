@@ -2,6 +2,11 @@ import torch.nn as nn
 
 
 def len_str(x):
+    """
+    Returns the length of the string representation of an object
+    :param x The object
+    :returns the length of __repr__
+    """
     if isinstance(x, nn.Sequential):
         return 0
     return len(str(x))
@@ -16,6 +21,8 @@ def get_modules(model: nn.Module):
     result = []
 
     for m in model.named_modules():
+        if isinstance(m[1], nn.Sequential):
+            continue
         result.append(m)
 
     return dict(result[1:])
@@ -42,9 +49,8 @@ def print_modules(model: nn.Module):
     print()
     print(f'{"Name" :{" "}<{max_name_length + 2}} | {"Module" :{" "}<{max_module_length + 2}}')
     print('-' * (max_module_length + max_name_length + 5))
+
     for module in modules:
-        if isinstance(modules[module], nn.Sequential):
-            continue
         print(f'{module :{" "}<{max_name_length + 2}} | {str(modules[module]) :{" "}<{max_module_length + 2}}')
 
     print()
