@@ -4,7 +4,7 @@ from toumei.objectives.misc.utils import convertUnitString
 
 class Channel(Atom):
     def __init__(self, unit: str):
-        self.identifiers = convertUnitString(self.unit)
+        self.identifiers = convertUnitString(unit)
 
         if len(self.identifiers) != 2:
             raise Exception(f"{unit} is not a valid unit string for the layer objective.")

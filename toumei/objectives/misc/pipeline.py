@@ -1,32 +1,26 @@
 import torch
-
-from toumei.objectives.objective import Objective
-from toumei.objectives.atoms.atom import Atom
-
 import torch.nn as nn
 
-from toumei.objectives.operations.operation import Operation
+from toumei.objectives.module import Module
+from toumei.objectives.objective import Objective, freezeModel
 from toumei.parameterization.generator import Generator
 
 
 class Pipeline(Objective):
-    def __init__(self, *elements):
+    def __init__(self, generator: Generator, obj_func: Module):
         super(Pipeline, self).__init__()
-        self.elements = elements
+        self.generator = generator
+        self.obj_func = obj_func
 
-        if len(elements) < 2:
-            raise Exception("Expected at least two elements in the pipeline (an image generator and an atom)")
+    def attach(self, model: nn.Module):
+        self.model = model
+        freezeModel(model)
+        self.root.attach(model)
 
-        if not isinstance(self.elements[0], Generator):
-            raise Exception("First element has to be an image generator.")
+    @property
+    def root(self) -> Module:
+        return self.obj_func
 
-    def attach(self, model: nn.Module, **kwargs):
-        for e in self.elements:
-            if isinstance(e, Atom):
-                super(Pipeline, self).attach(model, e.module, e.key)
-            if isinstance(e, Operation):
-                self.attach(model)
-
-    def forward(self, activation) -> torch.Tensor:
-        return 0
+    def forward(self) -> torch.Tensor:
+        return self.root()
 
