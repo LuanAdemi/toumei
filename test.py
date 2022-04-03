@@ -1,7 +1,11 @@
 import torch
 
-import toumei.probe as p
-import toumei.objectives as objective
+import toumei.objectives.objective
+import toumei.probe as probe
+from toumei.objectives import Pipeline
+import toumei.objectives.atoms as obj
+import toumei.objectives.operations as ops
+import toumei.parameterization as param
 import torch.nn as nn
 import torchvision.models as models
 
@@ -29,13 +33,13 @@ class Net(nn.Module):
 
 
 model2 = Net()
-inception = models.alexnet()
-p.print_modules(inception)
-objective = objective.Sequential(
-    objective.Layer("features.0"),
-    objective.Neuron("features.0:0:0")
-)
+alexNet = models.alexnet()
+probe.print_modules(alexNet)
 
-objective.attach(inception)
-inception(torch.rand((1, 3, 128, 128)))
-print(objective.activation)
+n = obj.Neuron("features.0:0:0")
+toumei.objectives.objective.freezeModel(alexNet)
+n.attach(alexNet)
+x = torch.rand((1, 3, 512, 512), requires_grad=True)
+print(n, n.hook, n())
+alexNet(x)
+print(n, n.hook, n())
