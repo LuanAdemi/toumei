@@ -14,17 +14,10 @@ device = torch.device("cuda")
 alexNet = models.alexnet(pretrained=True)
 probe.print_modules(alexNet)
 
-transform = torch.nn.Sequential(
-    T.Pad(12),
-    T.ColorJitter(8),
-    T.RandomRotation((-10, 11)),
-    T.ColorJitter(4)
-)
-
 # define a feature visualization pipeline
 fv = Pipeline(
     # the image generator object
-    param.Transform(param.PixelImage(1, 3, 512, 512), transform),
+    param.Transform(param.PixelImage(1, 3, 512, 512)),
 
     # the objective function
     obj.Channel("features.8:12")

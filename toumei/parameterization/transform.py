@@ -1,13 +1,21 @@
 from toumei.parameterization import Generator
 import torch.nn as nn
 import torch
+import torchvision.transforms as T
+
+standard_transform = torch.nn.Sequential(
+    T.Pad(12),
+    T.ColorJitter(8),
+    T.RandomRotation((-10, 11)),
+    T.ColorJitter(4)
+)
 
 
 class Transform(Generator):
-    def __init__(self, generator:Generator, transform: nn.Module):
+    def __init__(self, generator:Generator, transform_func: nn.Module = standard_transform):
         super(Transform, self).__init__()
         self.img_generator = generator
-        self.transform_function = transform
+        self.transform_function = transform_func
 
     @property
     def name(self) -> str:
