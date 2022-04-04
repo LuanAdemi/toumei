@@ -14,6 +14,7 @@ class Objective(object):
         super(Objective, self).__init__()
         self.model = None
         self.children = []
+        self.device = torch.device("cpu")
 
     def __str__(self) -> str:
         return f"Objective({self.model.__class__.__name__})"
@@ -50,13 +51,16 @@ class Objective(object):
         :param lr: the learning rate (default is 0.01)
         :return: nothing
         """
+        # send the model to the correct device
+        self.model.to(self.device)
+
         # attach the optimizer to the parameters of the current generator
         opt = optimizer(self.generator.parameters, lr)
 
-        for e in tqdm.trange(epochs):
+        for _ in tqdm.trange(epochs):
             opt.zero_grad()
             # forward pass using input from generator
-            self.model(self.generator.getImage())
+            self.model(self.generator.get_image().to(self.device))
 
             # calculate loss using current objective function
             loss = self.forward()
@@ -64,6 +68,14 @@ class Objective(object):
             # optimize the generator
             loss.backward()
             opt.step()
+
+    def to(self, device: torch.device):
+        """
+        Sets the device for the optimization process
+        :param device: the device
+        :return: nothing
+        """
+        self.device = device
 
     def forward(self) -> torch.Tensor:
         """

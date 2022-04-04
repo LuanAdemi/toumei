@@ -17,5 +17,5 @@ class PixelImage(Generator):
     def parameters(self) -> list:
         return [self.image]
 
-    def getImage(self, *args, **kwargs) -> torch.Tensor:
+    def get_image(self, *args, **kwargs) -> torch.Tensor:
         return self.image

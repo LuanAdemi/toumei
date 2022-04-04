@@ -1,38 +1,42 @@
+import torch.nn
+
 import toumei.probe as probe
 from toumei.objectives import Pipeline
 import toumei.objectives.atoms as obj
-import toumei.objectives.operations as ops
 import toumei.parameterization as param
 import torchvision.models as models
-import matplotlib.pyplot as plt
-import numpy as np
+import torchvision.transforms as T
 
-
-# helper function
-def tensor_to_img_array(tensor):
-    image = tensor.cpu().detach().numpy()
-    image = np.transpose(image, [0, 2, 3, 1])
-    return image[0]
+device = torch.device("cuda")
 
 
 # the model we want to analyze
 alexNet = models.alexnet(pretrained=True)
 probe.print_modules(alexNet)
 
+transform = torch.nn.Sequential(
+    T.Pad(12),
+    T.ColorJitter(8),
+    T.RandomRotation((-10, 11)),
+    T.ColorJitter(4)
+)
+
 # define a feature visualization pipeline
 fv = Pipeline(
     # the image generator object
-    param.PixelImage(1, 3, 512, 512),
+    param.Transform(param.PixelImage(1, 3, 512, 512), transform),
 
     # the objective function
-    ops.Multiply(obj.Channel("features.0:0"), obj.Channel("features.0:2"))
+    obj.Channel("features.8:12")
 )
 # attach the pipeline to the alexNet model
 fv.attach(alexNet)
+
+# send the objective to the gpu
+fv.to(device)
 
 # optimize the objective
 fv.optimize()
 
 # plot the results
-plt.imshow(tensor_to_img_array(fv.generator.getImage()))
-plt.show()
+fv.generator.plot_image()

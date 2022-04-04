@@ -6,7 +6,7 @@ setup(
     packages=['toumei', 'toumei.probe', 'toumei.objectives', 'toumei.parameterization'],
     url='',
     license='',
-    author='neonode',
+    author='Luan Ademi',
     author_email='luan.ademi@student.kit.edu',
     description='A library for easy feature visualization'
 )
