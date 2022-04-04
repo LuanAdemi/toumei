@@ -34,6 +34,10 @@ fv.optimize()
 
 ```
 
+# See also
+- Another great feature visualization library called <a href="https://github.com/greentfrapp/lucent">lucent</a>
+- The original library (research only) <a href="https://github.com/tensorflow/lucid">lucid</a>
+
 # References
 [1] https://distill.pub/2017/feature-visualization/
 
