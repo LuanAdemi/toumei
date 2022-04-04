@@ -1,4 +1,4 @@
-## Parameterization (TODO)
+## Parameterization (WIP)
 
 This subpackage contains classes for the parameterization of images. Feature Visualization through optimization has been
 found to work better with parameterized images, than with just plain pixel based images.
