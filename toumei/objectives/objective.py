@@ -3,6 +3,10 @@ import torch.nn as nn
 
 
 class Objective(object):
+    """
+    The base class for the feature visualization objectives
+    It handles the optimization process and provides a simple interface for analyzing the results
+    """
     def __init__(self):
         super(Objective, self).__init__()
         self.model = None
@@ -36,12 +40,23 @@ class Objective(object):
 
         return NotImplementedError
 
+    def summary(self):
+        """
+        Prints an overview of the current objective
+        :return: nothing
+        """
+        print("TODO")
+        return NotImplementedError
+
     def optimize(self, epochs=512, optimizer=torch.optim.Adam, lr=0.01):
         opt = optimizer([self.forward()], lr=lr)
         for e in range(epochs):
             opt.zero_grad()
 
-
     def forward(self) -> torch.Tensor:
+        return NotImplementedError
+
+    @property
+    def generator(self):
         return NotImplementedError
 

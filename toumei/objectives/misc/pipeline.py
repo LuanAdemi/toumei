@@ -13,11 +13,11 @@ class Pipeline(Objective):
     It takes a generator and a tree like objective function definition consisting of modules, which is executed
     recursively in the forward function.
     """
-    def __init__(self, generator: Generator, obj_func: Module):
+    def __init__(self, img_generator: Generator, obj_func: Module):
         super(Pipeline, self).__init__()
 
         # the image generator and the objective function
-        self.generator = generator
+        self.img_generator = img_generator
         self.obj_func = obj_func
 
     def attach(self, model: nn.Module):
@@ -64,6 +64,14 @@ class Pipeline(Objective):
         :return: the root node
         """
         return self.obj_func
+
+    @property
+    def generator(self):
+        """
+        Returns the image generator
+        :return:
+        """
+        return self.img_generator
 
     def forward(self) -> torch.Tensor:
         """
