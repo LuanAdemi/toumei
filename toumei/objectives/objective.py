@@ -2,16 +2,6 @@ import torch
 import torch.nn as nn
 
 
-def freezeModel(model: nn.Module):
-    for p in model.parameters():
-        p.requires_grad_(False)
-
-
-def unfreezeModel(model: nn.Module):
-    for p in model.parameters():
-        p.requires_grad_(True)
-
-
 class Objective(object):
     def __init__(self):
         super(Objective, self).__init__()
@@ -19,7 +9,7 @@ class Objective(object):
         self.children = []
 
     def __str__(self) -> str:
-        return f"Objective({self.model})"
+        return f"Objective({self.model.__class__.__name__})"
 
     def __call__(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -36,16 +26,7 @@ class Objective(object):
         :param model: The inspected model
         :return: nothing
         """
-
-        # set the model
-        self.model = model
-
-        # freeze the model
-        freezeModel(model)
-
-        # attach each atom to the model
-        for atom in self.atoms:
-            atom.attach(model)
+        return NotImplementedError
 
     def detach(self):
         """
@@ -53,16 +34,14 @@ class Objective(object):
         :return: nothing
         """
 
-        if self.model is None:
-            print("[Warning] Cannot detach from current model, since objective is not attached in the first place.")
-            return
+        return NotImplementedError
 
-        unfreezeModel(self.model)
+    def optimize(self, epochs=512, optimizer=torch.optim.Adam, lr=0.01):
+        opt = optimizer([self.forward()], lr=lr)
+        for e in range(epochs):
+            opt.zero_grad()
 
-        # remove all the hooks
-        for atom in self.atoms:
-            atom.detach()
 
     def forward(self) -> torch.Tensor:
-        return 0
+        return NotImplementedError
 

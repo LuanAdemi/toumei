@@ -23,10 +23,17 @@ class Atom(Module):
         # model
         self.attached_model = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.name}(unit={self.key}, model={self.model.__class__.__name__})"
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> torch.Tensor:
+        """
+        The call method for the atom.
+        It executes the overwritten forward function and returns its output
+        :param args: the arguments
+        :param kwargs: the keyword arguments
+        :return: the output of forward()
+        """
         if self.activation is None:
             raise Exception("Could not fetch activation map. This usually means no forward pass has happened prior to "
                             "this call.")
@@ -45,6 +52,7 @@ class Atom(Module):
 
         self.attached_model = model
 
+        # define the hook generation
         def create_hook(name):
             def hook(m, i, o):
                 # copy the output of the given layer
@@ -60,11 +68,19 @@ class Atom(Module):
         Detach from the model
         :return: nothing
         """
-        self.hook.remove()
-        self.hook_endpoint = None
+        if self.hook is not None:
+            self.hook.remove()
+            self.hook_endpoint = None
 
-    def forward(self, *args, **kwargs):
-        return NotImplementedError
+    def forward(self, *args, **kwargs) -> torch.Tensor:
+        """
+        The function defining the function of an atom.
+        This has to be overwritten by every child
+        :param args: the arguments
+        :param kwargs: the keyword arguments
+        :return: a tensor
+        """
+        return torch.zeros(1)
 
     @property
     def key(self) -> str:
@@ -107,5 +123,5 @@ class Atom(Module):
         return self.attached_model
 
     @property
-    def name(self):
+    def name(self) -> str:
         return "Atom"

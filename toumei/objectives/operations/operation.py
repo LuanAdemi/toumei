@@ -1,9 +1,11 @@
+import torch
+
 from toumei.objectives.module import Module
 import torch.nn as nn
 
 
 class Operation(Module):
-    def __init__(self, *children):
+    def __init__(self, *children: Module):
         super(Operation, self).__init__()
         self.atoms = children
 
@@ -17,7 +19,11 @@ class Operation(Module):
         for child in self.children:
             child.attach(model)
 
-    def forward(self, *args) -> int:
+    def detach(self):
+        for child in self.children:
+            child.detach()
+
+    def forward(self, *args) -> torch.Tensor:
         return NotImplementedError
 
     @property
