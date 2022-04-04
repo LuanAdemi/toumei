@@ -7,3 +7,11 @@ class Generator(object):
 
     def getImage(self, *args, **kwargs) -> torch.Tensor:
         return NotImplementedError
+
+    @property
+    def name(self) -> str:
+        return "Generator()"
+
+    @property
+    def parameters(self) -> torch.Tensor:
+        return NotImplementedError

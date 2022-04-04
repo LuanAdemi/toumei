@@ -68,7 +68,7 @@ class Pipeline(Objective):
         return self.obj_func
 
     @property
-    def generator(self):
+    def generator(self) -> Generator:
         """
         Returns the image generator
         :return:

@@ -1,5 +1,8 @@
 import torch
 import torch.nn as nn
+import tqdm
+
+from toumei.parameterization import Generator
 
 
 class Objective(object):
@@ -14,15 +17,6 @@ class Objective(object):
 
     def __str__(self) -> str:
         return f"Objective({self.model.__class__.__name__})"
-
-    def __call__(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        This method returns the tensor for backpropagation using the objective
-        :param x: the input image
-        :return: the loss
-        """
-        _ = self.model(x)
-        return self.forward()
 
     def attach(self, model: nn.Module):
         """
@@ -49,14 +43,42 @@ class Objective(object):
         return NotImplementedError
 
     def optimize(self, epochs=512, optimizer=torch.optim.Adam, lr=0.01):
-        opt = optimizer([self.forward()], lr=lr)
-        for e in range(epochs):
+        """
+        Optimize the current objective
+        :param epochs: the amount of optimization steps
+        :param optimizer: the optimizer (default is Adam)
+        :param lr: the learning rate (default is 0.01)
+        :return: nothing
+        """
+        # attach the optimizer to the parameters of the current generator
+        opt = optimizer(self.generator.parameters, lr)
+
+        for e in tqdm.trange(epochs):
             opt.zero_grad()
+            # forward pass using input from generator
+            self.model(self.generator.getImage())
+
+            # calculate loss using current objective function
+            loss = self.forward()
+
+            # optimize the generator
+            loss.backward()
+            opt.step()
 
     def forward(self) -> torch.Tensor:
+        """
+        The forward function returning the tensor calculated using the
+        objective function. This needs to be overwritten by child classes
+        implementing an objective.
+        :return:
+        """
         return NotImplementedError
 
     @property
-    def generator(self):
+    def generator(self) -> Generator:
+        """
+        Returns the generator object
+        :return:
+        """
         return NotImplementedError
 

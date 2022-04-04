@@ -19,7 +19,4 @@ fv = Pipeline(
 )
 # attach the pipeline to the alexNet model
 fv.attach(alexNet)
-print(fv)
-# forward-pass
-x = torch.rand((1, 3, 512, 512), requires_grad=True)
-print(fv(x))
+fv.optimize(100)
