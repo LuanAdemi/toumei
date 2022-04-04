@@ -30,7 +30,7 @@ objective = Pipeline(
 objective.attach(alexNet)
 
 # optimize the objective
-fv.optimize()
+objective.optimize()
 
 ```
 
