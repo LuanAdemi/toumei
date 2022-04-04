@@ -16,6 +16,8 @@ class Pipeline(Objective):
     def __init__(self, img_generator: Generator, obj_func: Module):
         super(Pipeline, self).__init__()
 
+        self.model = None
+
         # the image generator and the objective function
         self.img_generator = img_generator
         self.obj_func = obj_func
