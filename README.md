@@ -3,8 +3,6 @@
 # Toumei (tōmei)
 
 ![PyTorch](https://img.shields.io/badge/pytorch-1.10.0%2B-success)
-![License](https://img.shields.io/github/license/LuanAdemi/toumei.svg)
-![Issues](https://img.shields.io/github/issues/LuanAdemi/toumei.svg)
 
 Toumei is a feature visualization<sup>1</sup> library for pytorch providing a pipeline like work-flow for defining and optimizing custom objective functions. It implements every main idea presented in the distill articles and provides a user friendly interface for analyzing models.
 
