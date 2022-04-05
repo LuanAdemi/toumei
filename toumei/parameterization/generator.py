@@ -13,7 +13,7 @@ class Generator(object):
     def numpy(self, *args, **kwargs):
         image = self.get_image(*args, **kwargs).cpu().detach().numpy()
         image = np.transpose(image, [0, 2, 3, 1])
-        return image[0]
+        return (image[0] * 255).astype(np.uint8)
 
     def plot_image(self):
         plt.imshow(self.numpy(False))

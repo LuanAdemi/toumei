@@ -43,7 +43,7 @@ class Objective(object):
         print("TODO")
         return NotImplementedError
 
-    def optimize(self, epochs=512, optimizer=torch.optim.Adam, lr=0.01):
+    def optimize(self, epochs=512, optimizer=torch.optim.Adam, lr=5e-2):
         """
         Optimize the current objective
         :param epochs: the amount of optimization steps
@@ -60,7 +60,7 @@ class Objective(object):
         for _ in tqdm.trange(epochs):
             opt.zero_grad()
             # forward pass using input from generator
-            self.model(self.generator.get_image().to(self.device))
+            out = self.model(self.generator.get_image().to(self.device))
 
             # calculate loss using current objective function
             loss = self.forward()
