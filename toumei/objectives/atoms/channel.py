@@ -1,7 +1,7 @@
 import torch
 
 from toumei.objectives.atoms.atom import Atom
-from toumei.objectives.misc.utils import convertUnitString
+from toumei.objectives.misc.utils import convert_unit_string
 
 
 class Channel(Atom):
@@ -10,7 +10,7 @@ class Channel(Atom):
     This objective optimizes the activation of a whole channel
     """
     def __init__(self, unit: str):
-        self.identifiers = convertUnitString(unit)
+        self.identifiers = convert_unit_string(unit)
 
         # check if the unit string is valid
         if len(self.identifiers) != 2:

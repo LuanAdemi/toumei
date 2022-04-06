@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import tqdm
+import pickle
 
 from toumei.parameterization import Generator
 
@@ -40,8 +41,10 @@ class Objective(object):
         Prints an overview of the current objective
         :return: nothing
         """
-        print("TODO")
-        return NotImplementedError
+        print(f"Objective(")
+        print(f"    Generator:  {self.generator}")
+        print(f"    Criterion:  ")
+        print(")")
 
     def optimize(self, epochs=512, optimizer=torch.optim.Adam, lr=5e-2):
         """
@@ -58,9 +61,11 @@ class Objective(object):
         opt = optimizer(self.generator.parameters, lr)
 
         for _ in tqdm.trange(epochs):
+            # reset gradients
             opt.zero_grad()
+
             # forward pass using input from generator
-            out = self.model(self.generator.get_image().to(self.device))
+            _ = self.model(self.generator.get_image().to(self.device))
 
             # calculate loss using current objective function
             loss = self.forward()
@@ -93,4 +98,5 @@ class Objective(object):
         :return:
         """
         return NotImplementedError
+
 

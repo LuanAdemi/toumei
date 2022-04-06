@@ -17,7 +17,7 @@ class Transform(Generator):
 
     @property
     def name(self) -> str:
-        return f"Transform()"
+        return f"Transform({self.img_generator}, {self.transform_function})"
 
     @property
     def parameters(self) -> torch.Tensor:

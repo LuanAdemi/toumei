@@ -1,6 +1,7 @@
 import torch.nn
 import torchvision.transforms as T
 
+import toumei
 import toumei.probe as probe
 from toumei.objectives import Pipeline
 import toumei.objectives.atoms as obj
@@ -29,6 +30,7 @@ fv = Pipeline(
     # the objective function
     obj.Channel("features.5:62")
 )
+
 # attach the pipeline to the alexNet model
 fv.attach(alexNet)
 
@@ -40,3 +42,6 @@ fv.optimize()
 
 # plot the results
 fv.generator.plot_image()
+
+# save the objective
+toumei.save(fv, "objective.fv")

@@ -1,17 +1,28 @@
 import torch.nn as nn
+import pickle
 
 
-def convertUnitString(x: str):
+def convert_unit_string(x: str):
     identifiers = x.split(":")
     indices = map(int, identifiers[1:])
     return tuple([identifiers[0]] + list(indices))
 
 
-def freezeModel(model: nn.Module):
+def freeze_model(model: nn.Module):
     for p in model.parameters():
         p.requires_grad_(False)
 
 
-def unfreezeModel(model: nn.Module):
+def unfreeze_model(model: nn.Module):
     for p in model.parameters():
         p.requires_grad_(True)
+
+
+def save(objective, filename):
+    if objective.model is not None:
+        objective.detach()
+    pickle.dump(objective, open(filename, "wb"))
+
+
+def load(filename):
+    return pickle.load(open(filename, "rb"))

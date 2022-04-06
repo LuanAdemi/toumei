@@ -1,7 +1,7 @@
 import torch
 
 from toumei.objectives.atoms.atom import Atom
-from toumei.objectives.misc.utils import convertUnitString
+from toumei.objectives.misc.utils import convert_unit_string
 
 
 class Layer(Atom):
@@ -10,7 +10,7 @@ class Layer(Atom):
     This objective optimizes the activation of a whole layer.
     """
     def __init__(self, unit: str):
-        self.identifiers = convertUnitString(self.unit)
+        self.identifiers = convert_unit_string(self.unit)
 
         # check if the unit string is valid
         if len(self.identifiers) != 1:

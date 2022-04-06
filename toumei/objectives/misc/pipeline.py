@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from toumei.objectives.misc.utils import freezeModel, unfreezeModel
+from toumei.objectives.misc.utils import freeze_model, unfreeze_model
 from toumei.objectives.module import Module
 from toumei.objectives.objective import Objective
 from toumei.parameterization.generator import Generator
@@ -34,7 +34,7 @@ class Pipeline(Objective):
         self.model = model
 
         # freeze the model
-        freezeModel(model)
+        freeze_model(model)
 
         # call attach on the root
         self.root.attach(model)
@@ -51,7 +51,7 @@ class Pipeline(Objective):
             return
 
         # unfreeze the model
-        unfreezeModel(self.model)
+        unfreeze_model(self.model)
 
         # call detach on the root
         self.root.detach()

@@ -7,6 +7,9 @@ class Generator(object):
     def __init__(self):
         super(Generator, self).__init__()
 
+    def __str__(self):
+        return self.name
+
     def get_image(self, *args, **kwargs) -> torch.Tensor:
         return NotImplementedError
 

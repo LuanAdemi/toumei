@@ -27,6 +27,10 @@ class FFTImage(Generator):
         return torch.fft.irfftn(torch.view_as_complex(frequency), s=(self.h, self.w), norm="ortho")
 
     @property
+    def name(self) -> str:
+        return f"FFTImage({self.shape})"
+
+    @property
     def parameters(self) -> list:
         return [self.spectrum]
 

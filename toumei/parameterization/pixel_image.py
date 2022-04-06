@@ -9,9 +9,14 @@ class PixelImage(Generator):
     This generator exposes the raw pixel values as parameters to the optimizer.
     Compared to other parameterization approaches it performs pretty bad.
     """
-    def __init__(self, *dims: int):
+    def __init__(self, *shape: int):
         super(PixelImage, self).__init__()
-        self.image = torch.rand(tuple(dims), requires_grad=True)
+        self.image = torch.rand(tuple(shape), requires_grad=True)
+        self.shape = shape
+
+    @property
+    def name(self) -> str:
+        return f"PixelImage({self.shape})"
 
     @property
     def parameters(self) -> list:
