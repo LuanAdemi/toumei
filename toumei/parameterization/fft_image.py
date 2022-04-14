@@ -1,9 +1,9 @@
 import torch
 
-from toumei.parameterization import Generator
+from toumei.parameterization import ImageGenerator
 
 
-class FFTImage(Generator):
+class FFTImage(ImageGenerator):
     """
     A fast fourier parameterized image
     This generator exposes the DFT values as parameters to the optimizer.

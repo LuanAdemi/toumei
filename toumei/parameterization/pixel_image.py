@@ -1,9 +1,9 @@
 import torch
 
-from toumei.parameterization import Generator
+from toumei.parameterization import ImageGenerator
 
 
-class PixelImage(Generator):
+class PixelImage(ImageGenerator):
     """
     A basic pixel based image generator.
     This generator exposes the raw pixel values as parameters to the optimizer.

@@ -3,9 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-class Generator(object):
+class ImageGenerator(object):
     def __init__(self):
-        super(Generator, self).__init__()
+        super(ImageGenerator, self).__init__()
 
     def __str__(self):
         return self.name

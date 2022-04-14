@@ -1,4 +1,4 @@
-from toumei.parameterization import Generator
+from toumei.parameterization import ImageGenerator
 import torch.nn as nn
 import torch
 import torchvision.transforms as T
@@ -9,15 +9,19 @@ standard_transform = T.Compose([
 ])
 
 
-class Transform(Generator):
-    def __init__(self, generator: Generator, transform_func=standard_transform):
+class Transform(ImageGenerator):
+    def __init__(self, generator: ImageGenerator, transform_func=standard_transform):
         super(Transform, self).__init__()
         self.img_generator = generator
         self.transform_function = transform_func
 
     @property
     def name(self) -> str:
-        return f"Transform({self.img_generator}, {self.transform_function})"
+        return self.img_generator.name
+
+    @property
+    def criterion(self):
+        return self.img_generator.criterion
 
     @property
     def parameters(self) -> torch.Tensor:

@@ -1,9 +1,10 @@
 import torch
 import torch.nn as nn
 import tqdm
-import pickle
+from toumei.parameterization.models.tv_loss import TVLoss
 
-from toumei.parameterization import Generator
+import toumei.parameterization
+from toumei.parameterization import ImageGenerator
 
 
 class Objective(object):
@@ -46,12 +47,16 @@ class Objective(object):
         print(f"    Criterion:  ")
         print(")")
 
+    def total_variation(self, y):
+        return torch.sum(torch.abs(y[:, :, :, :-1] - y[:, :, :, 1:])) + \
+               torch.sum(torch.abs(y[:, :, :-1, :] - y[:, :, 1:, :]))
+
     def optimize(self, epochs=512, optimizer=torch.optim.Adam, lr=5e-2):
         """
         Optimize the current objective
         :param epochs: the amount of optimization steps
         :param optimizer: the optimizer (default is Adam)
-        :param lr: the learning rate (default is 0.01)
+        :param lr: the learning rate (default is 0.05)
         :return: nothing
         """
         # send the model to the correct device
@@ -60,15 +65,18 @@ class Objective(object):
         # attach the optimizer to the parameters of the current generator
         opt = optimizer(self.generator.parameters, lr)
 
+        criterion = TVLoss()
+
         for _ in tqdm.trange(epochs):
             # reset gradients
             opt.zero_grad()
 
             # forward pass using input from generator
-            _ = self.model(self.generator.get_image().to(self.device))
+            img = self.generator.get_image().to(self.device)
+            self.model(img)
 
             # calculate loss using current objective function
-            loss = self.forward()
+            loss = self.forward() + 0.25 * criterion(img)
 
             # optimize the generator
             loss.backward()
@@ -92,7 +100,7 @@ class Objective(object):
         return NotImplementedError
 
     @property
-    def generator(self) -> Generator:
+    def generator(self) -> ImageGenerator:
         """
         Returns the generator object
         :return:
