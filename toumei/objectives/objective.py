@@ -1,9 +1,8 @@
 import torch
 import torch.nn as nn
 import tqdm
-from toumei.parameterization.models.tv_loss import TVLoss
+from toumei.parameterization.misc.tv_loss import TVLoss
 
-import toumei.parameterization
 from toumei.parameterization import ImageGenerator
 
 
@@ -47,40 +46,45 @@ class Objective(object):
         print(f"    Criterion:  ")
         print(")")
 
-    def total_variation(self, y):
-        return torch.sum(torch.abs(y[:, :, :, :-1] - y[:, :, :, 1:])) + \
-               torch.sum(torch.abs(y[:, :, :-1, :] - y[:, :, 1:, :]))
-
-    def optimize(self, epochs=512, optimizer=torch.optim.Adam, lr=5e-2):
+    def optimize(self, epochs=512, optimizer=torch.optim.Adam, lr=5e-3, tv_loss=False):
         """
         Optimize the current objective
         :param epochs: the amount of optimization steps
         :param optimizer: the optimizer (default is Adam)
         :param lr: the learning rate (default is 0.05)
+        :param tv_loss: enable total variance loss
         :return: nothing
         """
-        # send the model to the correct device
+        # send the model and the generator to the correct device
         self.model.to(self.device)
+        self.generator.to(self.device)
 
         # attach the optimizer to the parameters of the current generator
         opt = optimizer(self.generator.parameters, lr)
 
         criterion = TVLoss()
 
-        for _ in tqdm.trange(epochs):
-            # reset gradients
-            opt.zero_grad()
+        with tqdm.trange(epochs) as t:
+            t.set_description(self.__str__())
+            for i in t:
+                # reset gradients
+                opt.zero_grad()
 
-            # forward pass using input from generator
-            img = self.generator.get_image().to(self.device)
-            self.model(img)
+                # forward pass using input from generator
+                img = self.generator.get_image().to(self.device)
+                self.model(img)
 
-            # calculate loss using current objective function
-            loss = self.forward() + 0.25 * criterion(img)
+                # calculate loss using current objective function
+                loss = self.forward()
 
-            # optimize the generator
-            loss.backward()
-            opt.step()
+                if tv_loss:
+                    loss += 0.15 * criterion(img)
+
+                # optimize the generator
+                loss.backward()
+                opt.step()
+
+                t.set_postfix(loss=loss.item())
 
     def to(self, device: torch.device):
         """

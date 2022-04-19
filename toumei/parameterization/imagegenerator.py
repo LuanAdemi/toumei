@@ -38,6 +38,9 @@ class ImageGenerator(object):
         plt.imshow(self.numpy(False))
         plt.show()
 
+    def to(self, device: torch.device):
+        return
+
     @property
     def name(self) -> str:
         """

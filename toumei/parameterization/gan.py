@@ -1,11 +1,15 @@
+from typing import Iterator
+
 import torch.nn as nn
 import torch
+from torch.nn import Parameter
+
 from toumei.parameterization.models.generator import Generator
 from toumei.parameterization.imagegenerator import ImageGenerator
 
 
 # might not be needed
-# custom weights initialization called on netG and netD
+# custom weights initialization
 def weights_init(m):
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
@@ -20,19 +24,17 @@ class GAN(ImageGenerator):
         super(GAN, self).__init__()
 
         self.shape = shape
-        self.model = Generator(*self.shape)
+        self.gan = Generator()
 
         # initialize the weights of the models
-        self.model.apply(weights_init)
-
-        self.fixed_noise = torch.randn(1, 100, 1, 1, requires_grad=True)
-
-    @property
-    def parameters(self) -> torch.Tensor:
-        return self.model.parameters()
+        self.gan.apply(weights_init)
 
     def get_image(self, *args, **kwargs) -> torch.Tensor:
-        return self.model(torch.randn(1, 100, 1, 1, requires_grad=True))
+        return self.gan(torch.randn(1, 100, 1, 1, requires_grad=True))
+
+    @property
+    def parameters(self) -> Iterator[Parameter]:
+        return self.gan.parameters()
 
     @property
     def name(self) -> str:

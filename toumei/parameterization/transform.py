@@ -1,5 +1,4 @@
 from toumei.parameterization import ImageGenerator
-import torch.nn as nn
 import torch
 import torchvision.transforms as T
 
@@ -15,20 +14,16 @@ class Transform(ImageGenerator):
         self.img_generator = generator
         self.transform_function = transform_func
 
+    def to(self, device: torch.device):
+        self.img_generator.to(device)
+
     @property
     def name(self) -> str:
         return self.img_generator.name
-
-    @property
-    def criterion(self):
-        return self.img_generator.criterion
 
     @property
     def parameters(self) -> torch.Tensor:
         return self.img_generator.parameters
 
     def get_image(self, transform=True) -> torch.Tensor:
-        if transform:
-            return self.transform_function(self.img_generator.get_image())
-        else:
-            return self.img_generator.get_image()
+        return self.transform_function(self.img_generator.get_image())
