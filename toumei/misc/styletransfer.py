@@ -4,8 +4,6 @@ import torch.nn as nn
 import torchvision.transforms as T
 import tqdm
 
-from lucent.modelzoo import inceptionv1
-
 import toumei.objectives as obj
 import toumei.parameterization as param
 
