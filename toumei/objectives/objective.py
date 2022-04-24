@@ -57,6 +57,7 @@ class Objective(object):
         """
         # send the model and the generator to the correct device
         self.model.to(self.device)
+        self.model.eval()
         self.generator.to(self.device)
 
         # attach the optimizer to the parameters of the current generator
@@ -66,25 +67,27 @@ class Objective(object):
 
         with tqdm.trange(epochs) as t:
             t.set_description(self.__str__())
-            for i in t:
-                # reset gradients
-                opt.zero_grad()
+            for _ in t:
+                def step():
+                    # reset gradients
+                    opt.zero_grad()
 
-                # forward pass using input from generator
-                img = self.generator.get_image().to(self.device)
-                self.model(img)
+                    # forward pass using input from generator
+                    img = self.generator.get_image().to(self.device)
+                    out = self.model(img)
 
-                # calculate loss using current objective function
-                loss = self.forward()
+                    # calculate loss using current objective function
+                    loss = self.forward()
 
-                if tv_loss:
-                    loss += 0.15 * criterion(img)
+                    if tv_loss:
+                        loss += 0.15 * criterion(img)
 
-                # optimize the generator
-                loss.backward()
-                opt.step()
+                    # optimize the generator
+                    loss.backward()
+                    opt.step()
 
-                t.set_postfix(loss=loss.item())
+                    t.set_postfix(loss=loss.item())
+                opt.step(step())
 
     def to(self, device: torch.device):
         """

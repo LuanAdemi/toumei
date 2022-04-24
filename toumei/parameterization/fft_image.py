@@ -37,5 +37,5 @@ class FFTImage(ImageGenerator):
     def get_image(self, *args, **kwargs) -> torch.Tensor:
         scale = 1.0 / torch.maximum(self.freq, torch.tensor(1.0 / max(self.w, self.h)))[None, None, ..., None]
         scaled_spectrum = scale * self.spectrum
-        image = self.freq_to_img(scaled_spectrum)[:self.shape[0], :self.shape[1], :self.h, :self.w] / 4.0
+        image = self.freq_to_img(scaled_spectrum)[:self.shape[0], :self.shape[1], :self.h, :self.w] / 8.0
         return torch.sigmoid(image)

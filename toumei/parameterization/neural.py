@@ -13,7 +13,7 @@ class Neural(ImageGenerator):
 
         self.shape = shape
         self.device = torch.device("cpu")
-        self.cppn = CPPN(8)
+        self.cppn = CPPN(4)
 
         # build the input plane using polar coordinates
         r = 3 ** 0.5

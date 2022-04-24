@@ -10,7 +10,7 @@ class Layer(Atom):
     This objective optimizes the activation of a whole layer.
     """
     def __init__(self, unit: str):
-        self.identifiers = convert_unit_string(self.unit)
+        self.identifiers = convert_unit_string(unit)
 
         # check if the unit string is valid
         if len(self.identifiers) != 1:

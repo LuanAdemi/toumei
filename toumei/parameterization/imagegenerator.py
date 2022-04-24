@@ -19,14 +19,14 @@ class ImageGenerator(object):
         """
         return NotImplementedError
 
-    def numpy(self, *args, **kwargs):
+    def numpy(self, transform=False):
         """
         Converts the generated image into a numpy array
         :param args: arguments
         :param kwargs: keyword arguments
         :return: image (numpy array)
         """
-        image = self.get_image(*args, **kwargs).cpu().detach().numpy()
+        image = self.get_image(transform).cpu().detach().numpy()
         image = np.transpose(image, [0, 2, 3, 1])
         return (image[0] * 255).astype(np.uint8)
 

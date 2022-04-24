@@ -1,3 +1,5 @@
+from matplotlib import pyplot as plt
+
 from toumei.parameterization import ImageGenerator
 import torch
 import torchvision.transforms as T
@@ -25,5 +27,9 @@ class Transform(ImageGenerator):
     def parameters(self) -> torch.Tensor:
         return self.img_generator.parameters
 
-    def get_image(self, transform=True) -> torch.Tensor:
-        return self.transform_function(self.img_generator.get_image())
+    def get_image(self, transfrom=True) -> torch.Tensor:
+        img = self.img_generator.get_image()
+        if transfrom:
+            img = self.transform_function(img)
+
+        return img
