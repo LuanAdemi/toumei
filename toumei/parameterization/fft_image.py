@@ -8,9 +8,10 @@ class FFTImage(ImageGenerator):
     A fast fourier parameterized image
     This generator exposes the DFT values as parameters to the optimizer.
     """
-    def __init__(self, *shape: int):
+    def __init__(self, *shape: int, saturation: float = 4.0):
         super(FFTImage, self).__init__()
         self.shape = shape
+        self.saturation = saturation
         self.w = shape[-2]
         self.h = shape[-1]
         fy = torch.fft.fftfreq(self.h)[:, None]
@@ -34,8 +35,8 @@ class FFTImage(ImageGenerator):
     def parameters(self) -> list:
         return [self.spectrum]
 
-    def get_image(self, *args, **kwargs) -> torch.Tensor:
+    def get_image(self,  *args, **kwargs) -> torch.Tensor:
         scale = 1.0 / torch.maximum(self.freq, torch.tensor(1.0 / max(self.w, self.h)))[None, None, ..., None]
         scaled_spectrum = scale * self.spectrum
-        image = self.freq_to_img(scaled_spectrum)[:self.shape[0], :self.shape[1], :self.h, :self.w] / 8.0
+        image = self.freq_to_img(scaled_spectrum)[:self.shape[0], :self.shape[1], :self.h, :self.w] / self.saturation
         return torch.sigmoid(image)

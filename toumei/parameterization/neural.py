@@ -4,7 +4,7 @@ import torch
 from torch.nn import Parameter
 
 from toumei.parameterization import ImageGenerator
-from toumei.parameterization.models.cppn import CPPN
+from toumei.misc.models.cppn import CPPN
 
 
 class Neural(ImageGenerator):
@@ -13,7 +13,7 @@ class Neural(ImageGenerator):
 
         self.shape = shape
         self.device = torch.device("cpu")
-        self.cppn = CPPN(4)
+        self.cppn = CPPN(8)
 
         # build the input plane using polar coordinates
         r = 3 ** 0.5

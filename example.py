@@ -24,10 +24,10 @@ model = inceptionv1(pretrained=True)
 # define a feature visualization pipeline
 fv = obj.Pipeline(
     # the image generator object
-    param.Transform(param.Neural(1, 3, 256, 256), transform),
+    param.Transform(param.FFTImage(1, 3, 224, 224), transform),
 
     # the objective function
-    obj.Channel("mixed4b_3x3_pre_relu_conv:77")
+    obj.Channel("mixed4b_3x3_pre_relu_conv:79")
 )
 
 # attach the pipeline to the alexNet model

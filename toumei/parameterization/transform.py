@@ -27,9 +27,9 @@ class Transform(ImageGenerator):
     def parameters(self) -> torch.Tensor:
         return self.img_generator.parameters
 
-    def get_image(self, transfrom=True) -> torch.Tensor:
+    def get_image(self, transform=True) -> torch.Tensor:
         img = self.img_generator.get_image()
-        if transfrom:
+        if transform:
             img = self.transform_function(img)
 
         return img

@@ -41,10 +41,10 @@ class StyleTransferParam(param.ImageGenerator):
         super(StyleTransferParam, self).__init__()
 
         self.shape = content_img.shape[:2]
-        self.generator = param.FFTImage(1, 3, *self.shape)
+        self.generator = param.FFTImage(1, 3, *self.shape, saturation=20.0)
 
-        self.content_input = torch.FloatTensor(np.transpose(content_img, [2, 1, 0]))
-        self.style_input = torch.FloatTensor(np.transpose(style_img[:self.shape[0], :self.shape[1], :], [2, 1, 0]))
+        self.content_input = torch.FloatTensor(np.transpose(content_img, [2, 0, 1]))
+        self.style_input = torch.FloatTensor(np.transpose(style_img[:self.shape[0], :self.shape[1], :], [2, 0, 1]))
 
         self.device = torch.device("cpu")
 

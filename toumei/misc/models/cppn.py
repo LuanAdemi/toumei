@@ -19,12 +19,6 @@ class CompositeActivation(nn.Module):
         return torch.cat([x/0.67, (x*x)/0.6], 1)
 
 
-class ReLUNormalized(nn.Module):
-    def forward(self, x):
-        relu = nn.ReLU()
-        return (relu(x) - 0.40) / 0.58
-
-
 class CPPN(nn.Module):
     def __init__(self, num_blocks):
         super(CPPN, self).__init__()
@@ -39,7 +33,7 @@ class CPPN(nn.Module):
             self.blocks.append((f"activation_{i + 1}", CompositeActivation()))
 
         self.blocks.append((f"last", nn.Conv2d(48, 3, kernel_size=1)))
-        self.blocks.append((f"out", nn.Sigmoid()))
+        self.blocks.append((f"out", nn.Tanh()))
 
         self.model = nn.Sequential(OrderedDict(self.blocks))
 
