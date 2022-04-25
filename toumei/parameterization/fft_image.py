@@ -9,6 +9,13 @@ class FFTImage(ImageGenerator):
     This generator exposes the DFT values as parameters to the optimizer.
     """
     def __init__(self, *shape: int, saturation: float = 4.0):
+        """
+        Initializes a new fast fourier transformation image generator.
+        This encodes images in the spatial domain.
+
+        :param shape: the shape of the image
+        :param saturation: this controls the saturation of the images
+        """
         super(FFTImage, self).__init__()
         self.shape = shape
         self.saturation = saturation

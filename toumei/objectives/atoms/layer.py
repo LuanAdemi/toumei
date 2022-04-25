@@ -10,6 +10,11 @@ class Layer(Atom):
     This objective optimizes the activation of a whole layer.
     """
     def __init__(self, unit: str):
+        """
+        Initializes a new Layer objective atom
+
+        :param unit: the unit of the objective
+        """
         self.identifiers = convert_unit_string(unit)
 
         # check if the unit string is valid
@@ -21,6 +26,7 @@ class Layer(Atom):
     def forward(self, *args, **kwargs) -> torch.Tensor:
         """
         The forward function for the layer objective
+
         :param args: the arguments
         :param kwargs: the keyword arguments
         :return: the channel objective tensor

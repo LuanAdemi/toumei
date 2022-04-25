@@ -1,8 +1,7 @@
 import torch
 import torch.nn as nn
 import tqdm
-from toumei.parameterization.misc.tv_loss import TVLoss
-
+from toumei.misc.tv_loss import TVLoss
 from toumei.parameterization import ImageGenerator
 
 

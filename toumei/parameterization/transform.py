@@ -1,5 +1,3 @@
-from matplotlib import pyplot as plt
-
 from toumei.parameterization import ImageGenerator
 import torch
 import torchvision.transforms as T
@@ -11,7 +9,16 @@ standard_transform = T.Compose([
 
 
 class Transform(ImageGenerator):
+    """
+    A wrapper for generators for applying torchvision transforms on the given image generator.
+    """
     def __init__(self, generator: ImageGenerator, transform_func=standard_transform):
+        """
+        Creates a new Transform wrapper
+
+        :param generator: the base image generator
+        :param transform_func: the transform function
+        """
         super(Transform, self).__init__()
         self.img_generator = generator
         self.transform_function = transform_func

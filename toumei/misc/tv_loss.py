@@ -3,6 +3,10 @@ import torch.nn as nn
 
 
 class TVLoss(nn.Module):
+    """
+    An implementation of the total variance loss
+    See https://github.com/jxgu1016/Total_Variation_Loss.pytorch
+    """
     def __init__(self, weight=1):
         super(TVLoss, self).__init__()
         self.TVLoss_weight = weight

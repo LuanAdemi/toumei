@@ -8,7 +8,15 @@ from toumei.misc.models.cppn import CPPN
 
 
 class Neural(ImageGenerator):
+    """
+    An implementation of CPPN's for feature visualization
+    """
     def __init__(self, *shape):
+        """
+        Initializes a new CPPN image generator
+
+        :param shape: the shape of the image
+        """
         super(Neural, self).__init__()
 
         self.shape = shape

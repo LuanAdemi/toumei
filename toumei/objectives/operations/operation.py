@@ -1,12 +1,13 @@
 import torch
 
-from toumei.objectives.module import Module
 import torch.nn as nn
 
+from toumei.objectives.atoms import Atom
 
-class Operation(Module):
-    def __init__(self, *children: Module):
-        super(Operation, self).__init__()
+
+class Operation(Atom):
+    def __init__(self, *children: Atom):
+        super(Operation, self).__init__("Operation", "")
         self.atoms = children
 
     def __str__(self):

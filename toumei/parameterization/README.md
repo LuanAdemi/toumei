@@ -6,4 +6,4 @@ Toumei implements a couple of approaches:
 - Simple Pixel Images
 - Fast Fourier Transformation Images
 - Neural Network based Images
-- Generative Adversarial Network based Images (Generator)
+- ~~Generative Adversarial Network based Images (Generator)~~

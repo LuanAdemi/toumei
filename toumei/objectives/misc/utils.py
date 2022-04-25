@@ -9,11 +9,21 @@ def convert_unit_string(x: str):
 
 
 def freeze_model(model: nn.Module):
+    """
+    Freezes the parameters of a pytorch model
+
+    :param model: the model
+    """
     for p in model.parameters():
         p.requires_grad_(False)
 
 
 def unfreeze_model(model: nn.Module):
+    """
+    Un-Freezes the parameters of a pytorch model
+
+    :param model: the model
+    """
     for p in model.parameters():
         p.requires_grad_(True)
 

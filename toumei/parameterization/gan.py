@@ -20,7 +20,15 @@ def weights_init(m):
 
 
 class GAN(ImageGenerator):
+    """
+    A WIP implementation of GANs for feature visualization.
+    """
     def __init__(self, *shape):
+        """
+        Initializes a new GAN image generator
+
+        :param shape: the shape of the image
+        """
         super(GAN, self).__init__()
 
         self.shape = shape

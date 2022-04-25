@@ -27,6 +27,7 @@ standard_content_layers = [
 def gram_matrix(features, normalize=True):
     """
     Calculates the Gram matrix for the given features
+
     :param features: the input features
     :param normalize: normalize the gram matrix
     :return:
@@ -47,6 +48,7 @@ class StyleTransferParam(param.ImageGenerator):
     def __init__(self, content_img, style_img):
         """
         Initializes a new StyleTransferParam generator
+
         :param content_img: the content image
         :param style_img: the style image
         """
@@ -71,6 +73,7 @@ class StyleTransferParam(param.ImageGenerator):
     def parameters(self) -> list:
         """
         Expose the FFTImage generators parameters
+
         :return:
         """
         return self.generator.parameters
@@ -78,6 +81,7 @@ class StyleTransferParam(param.ImageGenerator):
     def get_image(self, *args, **kwargs) -> torch.Tensor:
         """
         Returns a tensor which contains the generator, content and style image
+
         :param args: the arguments
         :param kwargs: the keyword arguments
         :return: the stacked images
@@ -94,6 +98,7 @@ class ActivationDifference(obj.Atom):
     def __init__(self, layers, loss=nn.L1Loss(), transform=None):
         """
         Initializes a new ActivationDifference atom
+
         :param layers: the layers for the difference computation
         :param loss: the loss metric function
         :param transform: a transform function, default is None
@@ -126,6 +131,7 @@ class ActivationDifference(obj.Atom):
         """
         Computed the activation difference between the transfer image and the given comparison image.
         Also performs transforms if a transform function was specified.
+
         :param images: the images generated using the StyleTransferParam generator
         :param comp: the index of the comparison image
         :return: the loss using the specified metric
@@ -164,6 +170,7 @@ class StyleTransfer(obj.Objective):
                  content_layers=None, style_layers=None):
         """
         Initializes a new StyleTransfer objective
+
         :param content_image: the content image
         :param content_weight: the content weight
         :param style_image: the style image
