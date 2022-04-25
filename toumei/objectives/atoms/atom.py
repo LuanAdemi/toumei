@@ -2,15 +2,19 @@ import torch
 from torch.utils.hooks import RemovableHandle
 import torch.nn as nn
 
-from toumei.objectives.module import Module
 
-
-class Atom(Module):
+class Atom(object):
     """
     The building block for creating objectives.
     An atom creates a forward_hook in the specified model and stores the activation as a hook endpoint in the object.
     """
     def __init__(self, unit: str, layer: str):
+        """
+        Initializes a new atom
+
+        :param unit: the unit of the objective
+        :param layer: the layer of the objective
+        """
         super(Atom, self).__init__()
         # hook stuff
         self.forward_hook = None
@@ -30,6 +34,7 @@ class Atom(Module):
         """
         The call method for the atom.
         It executes the overwritten forward function and returns its output
+
         :param args: the arguments
         :param kwargs: the keyword arguments
         :return: the output of forward()
@@ -42,6 +47,7 @@ class Atom(Module):
     def attach(self, model: nn.Module):
         """
         Attach to the specified model
+
         :param model: the model to attach to
         :return: nothing
         """
@@ -66,6 +72,7 @@ class Atom(Module):
     def detach(self):
         """
         Detach from the model
+
         :return: nothing
         """
         if self.hook is not None:
@@ -76,6 +83,7 @@ class Atom(Module):
         """
         The function defining the function of an atom.
         This has to be overwritten by every child
+
         :param args: the arguments
         :param kwargs: the keyword arguments
         :return: a tensor
@@ -86,6 +94,7 @@ class Atom(Module):
     def key(self) -> str:
         """
         The key of the atom
+
         :return: the key
         """
         return self.unit
@@ -94,6 +103,7 @@ class Atom(Module):
     def module(self) -> str:
         """
         The model module the atom is attached to
+
         :return: the module
         """
         return self.layer
@@ -102,6 +112,7 @@ class Atom(Module):
     def hook(self) -> RemovableHandle:
         """
         Returns a RemovableHandle object for the hook of the atom
+
         :return: RemovableHandle object
         """
         return self.forward_hook
@@ -110,6 +121,7 @@ class Atom(Module):
     def activation(self) -> torch.Tensor:
         """
         The tensor returned by the forward hook
+
         :return: activation tensor
         """
         return self.hook_endpoint
@@ -118,10 +130,16 @@ class Atom(Module):
     def model(self) -> nn.Module:
         """
         The attached model
+
         :return: the model
         """
         return self.attached_model
 
     @property
     def name(self) -> str:
+        """
+        The name of the atom
+
+        :return: the name
+        """
         return "Atom"

@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 
 from toumei.objectives.misc.utils import freeze_model, unfreeze_model
-from toumei.objectives.module import Module
+from toumei.objectives.atoms import Atom
 from toumei.objectives.objective import Objective
-from toumei.parameterization.generator import Generator
+from toumei.parameterization import ImageGenerator
 
 
 class Pipeline(Objective):
@@ -13,7 +13,7 @@ class Pipeline(Objective):
     It takes a generator and a tree like objective function definition consisting of modules, which is executed
     recursively in the forward function.
     """
-    def __init__(self, img_generator: Generator, obj_func: Module):
+    def __init__(self, img_generator: ImageGenerator, obj_func: Atom):
         super(Pipeline, self).__init__()
 
         self.model = None
@@ -25,8 +25,7 @@ class Pipeline(Objective):
     def attach(self, model: nn.Module):
         """
         Attach the modules to the model.
-        :param model:
-        :return: nothing
+        :param model: the model
         """
         if self.model is not None:
             self.detach()
@@ -60,7 +59,7 @@ class Pipeline(Objective):
         self.model = None
 
     @property
-    def root(self) -> Module:
+    def root(self) -> Atom:
         """
         Returns the root node of the objective function tree
         :return: the root node
@@ -68,7 +67,7 @@ class Pipeline(Objective):
         return self.obj_func
 
     @property
-    def generator(self) -> Generator:
+    def generator(self) -> ImageGenerator:
         """
         Returns the image generator
         :return:

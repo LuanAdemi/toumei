@@ -1,9 +1,8 @@
 import torch
 import torch.nn as nn
 import tqdm
-import pickle
-
-from toumei.parameterization import Generator
+from toumei.misc.tv_loss import TVLoss
+from toumei.parameterization import ImageGenerator
 
 
 class Objective(object):
@@ -46,33 +45,48 @@ class Objective(object):
         print(f"    Criterion:  ")
         print(")")
 
-    def optimize(self, epochs=512, optimizer=torch.optim.Adam, lr=5e-2):
+    def optimize(self, epochs=512, optimizer=torch.optim.Adam, lr=5e-3, tv_loss=False):
         """
         Optimize the current objective
         :param epochs: the amount of optimization steps
         :param optimizer: the optimizer (default is Adam)
-        :param lr: the learning rate (default is 0.01)
+        :param lr: the learning rate (default is 0.05)
+        :param tv_loss: enable total variance loss
         :return: nothing
         """
-        # send the model to the correct device
+        # send the model and the generator to the correct device
         self.model.to(self.device)
+        self.model.eval()
+        self.generator.to(self.device)
 
         # attach the optimizer to the parameters of the current generator
         opt = optimizer(self.generator.parameters, lr)
 
-        for _ in tqdm.trange(epochs):
-            # reset gradients
-            opt.zero_grad()
+        criterion = TVLoss()
 
-            # forward pass using input from generator
-            _ = self.model(self.generator.get_image().to(self.device))
+        with tqdm.trange(epochs) as t:
+            t.set_description(self.__str__())
+            for _ in t:
+                def step():
+                    # reset gradients
+                    opt.zero_grad()
 
-            # calculate loss using current objective function
-            loss = self.forward()
+                    # forward pass using input from generator
+                    img = self.generator.get_image().to(self.device)
+                    out = self.model(img)
 
-            # optimize the generator
-            loss.backward()
-            opt.step()
+                    # calculate loss using current objective function
+                    loss = self.forward()
+
+                    if tv_loss:
+                        loss += 0.15 * criterion(img)
+
+                    # optimize the generator
+                    loss.backward()
+                    opt.step()
+
+                    t.set_postfix(loss=loss.item())
+                opt.step(step())
 
     def to(self, device: torch.device):
         """
@@ -92,7 +106,7 @@ class Objective(object):
         return NotImplementedError
 
     @property
-    def generator(self) -> Generator:
+    def generator(self) -> ImageGenerator:
         """
         Returns the generator object
         :return:

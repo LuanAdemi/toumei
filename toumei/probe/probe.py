@@ -4,6 +4,7 @@ import torch.nn as nn
 def len_str(x):
     """
     Returns the length of the string representation of an object
+
     :param x The object
     :returns the length of __repr__
     """
@@ -15,6 +16,7 @@ def len_str(x):
 def get_modules(model: nn.Module):
     """
     Returns a dict containing the model named modules
+
     :param model The inspected model
     :returns dict
     """
@@ -31,6 +33,7 @@ def get_modules(model: nn.Module):
 def print_modules(model: nn.Module):
     """
     Prints the named modules of a model
+
     :param model The inspected model
     """
     # get the modules as a dict
