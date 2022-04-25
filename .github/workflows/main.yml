@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-python@v3
 
       # ADJUST THIS: install all dependencies (including pdoc)
-      - run: pip install pdoc.
+      - run: pip install torch torchvision tqdm numpy matplotlib pdoc
       # ADJUST THIS: build your documentation into docs/.
       - run: pdoc -o docs/ 
       # We use a custom build script for pdoc itself, ideally you just run `pdoc -o docs/ ...` here.
