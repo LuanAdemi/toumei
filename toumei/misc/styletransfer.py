@@ -10,6 +10,7 @@ import toumei.parameterization as param
 from toumei.misc.models.inception5h import Inception5h
 from toumei.objectives.misc.utils import freeze_model
 
+# standard layers for the style transfer
 standard_style_layers = [
     'conv2d2',
     'mixed3a',
@@ -23,11 +24,13 @@ standard_content_layers = [
 ]
 
 
-def mean_l1(a, b):
-    return torch.abs(a - b).mean()
-
-
 def gram_matrix(features, normalize=True):
+    """
+    Calculates the Gram matrix for the given features
+    :param features: the input features
+    :param normalize: normalize the gram matrix
+    :return:
+    """
     C, H, W = features.shape
     features = features.view(C, -1)
     gram = torch.matmul(features, torch.transpose(features, 0, 1))
@@ -37,7 +40,16 @@ def gram_matrix(features, normalize=True):
 
 
 class StyleTransferParam(param.ImageGenerator):
+    """
+    A ImageGenerator for style transfer.
+    It uses a FFTImage generator under the hood and exposes its parameters.
+    """
     def __init__(self, content_img, style_img):
+        """
+        Initializes a new StyleTransferParam generator
+        :param content_img: the content image
+        :param style_img: the style image
+        """
         super(StyleTransferParam, self).__init__()
 
         self.shape = content_img.shape[:2]
@@ -57,20 +69,41 @@ class StyleTransferParam(param.ImageGenerator):
 
     @property
     def parameters(self) -> list:
+        """
+        Expose the FFTImage generators parameters
+        :return:
+        """
         return self.generator.parameters
 
     def get_image(self, *args, **kwargs) -> torch.Tensor:
+        """
+        Returns a tensor which contains the generator, content and style image
+        :param args: the arguments
+        :param kwargs: the keyword arguments
+        :return: the stacked images
+        """
         generator_input = self.generator.get_image()[0]
         return torch.stack([generator_input, self.content_input, self.style_input]).to(self.device)
 
 
 class ActivationDifference(obj.Atom):
-    def __init__(self, layers, loss=mean_l1, transform=None):
+    """
+    A custom objective atom for style transfer.
+    It computes the activation difference between the content and style images using the given layers and metric.
+    """
+    def __init__(self, layers, loss=nn.L1Loss(), transform=None):
+        """
+        Initializes a new ActivationDifference atom
+        :param layers: the layers for the difference computation
+        :param loss: the loss metric function
+        :param transform: a transform function, default is None
+        """
         super(ActivationDifference, self).__init__("activation_difference", str(layers))
 
         self.layers = layers
         self.loss = loss
 
+        # create layer objectives for the specified layers
         self.activation_atoms = [obj.Layer(layer) for layer in self.layers]
         self.hooks = []
 
@@ -89,19 +122,30 @@ class ActivationDifference(obj.Atom):
             if hook is not None:
                 self.hook.remove()
 
-    def forward(self, imgs, comp) -> torch.Tensor:
+    def forward(self, images, comp) -> torch.Tensor:
+        """
+        Computed the activation difference between the transfer image and the given comparison image.
+        Also performs transforms if a transform function was specified.
+        :param images: the images generated using the StyleTransferParam generator
+        :param comp: the index of the comparison image
+        :return: the loss using the specified metric
+        """
 
-        self.model(imgs)
+        # pass the images through the model
+        self.model(images)
 
-        base_activations = [atom.activation[comp] for atom in self.activation_atoms]
-        if self.transform is not None:
-            base_activations = [self.transform(act) for act in base_activations]
-
-        comp_activations = [atom.activation[0] for atom in self.activation_atoms]
+        # the activation of the comparison image
+        comp_activations = [atom.activation[comp] for atom in self.activation_atoms]
         if self.transform is not None:
             comp_activations = [self.transform(act) for act in comp_activations]
 
-        losses = [self.loss(a, b) for a, b in zip(base_activations, comp_activations)]
+        # the activation of the transfer image
+        transfer_activations = [atom.activation[0] for atom in self.activation_atoms]
+        if self.transform is not None:
+            transfer_activations = [self.transform(act) for act in transfer_activations]
+
+        # calculate the loss using the specified metric
+        losses = [self.loss(a, b) for a, b in zip(comp_activations, transfer_activations)]
 
         return sum(losses)
 
@@ -111,14 +155,27 @@ class ActivationDifference(obj.Atom):
 
 
 class StyleTransfer(obj.Objective):
+    """
+    A custom objective for style transfer using InceptionV1
+    """
     def __init__(self,
                  content_image, content_weight,
                  style_image, style_weight,
-                 style_layers=None, content_layers=None):
+                 content_layers=None, style_layers=None):
+        """
+        Initializes a new StyleTransfer objective
+        :param content_image: the content image
+        :param content_weight: the content weight
+        :param style_image: the style image
+        :param style_weight: the style weight
+        :param content_layers: the layers used for the content activation
+        :param style_layers: the layers used for the style activation
+        """
         super(StyleTransfer, self).__init__()
 
         self.device = torch.device("cpu")
 
+        # set the layers to default values if None
         if content_layers is None:
             content_layers = standard_content_layers
         if style_layers is None:
@@ -134,15 +191,18 @@ class StyleTransfer(obj.Objective):
         self.style_layers = style_layers
         self.style_objective = ActivationDifference(self.style_layers, transform=gram_matrix)
 
+        # standard transforms
         transform = T.Compose([
             T.Pad(12),
             T.RandomRotation((-10, 11)),
             T.Lambda(lambda x: x*255 - 117)
         ])
 
+        # generator and inception model for the style transfer
         self.param = param.Transform(StyleTransferParam(content_image, style_image), transform)
         self.model = Inception5h(pretrained=True)
 
+        # attach the atoms to the inception model
         self.style_objective.attach(self.model)
         self.content_objective.attach(self.model)
 
@@ -155,9 +215,14 @@ class StyleTransfer(obj.Objective):
         return self.param
 
     def forward(self) -> torch.Tensor:
-        imgs = self.param.get_image()
-        return self.content_weight * self.content_objective.forward(imgs, 1) \
-               + self.style_weight * self.style_objective.forward(imgs, 2)
+        # get the current images from the generator
+        images = self.param.get_image()
+
+        # the loss function
+        loss = self.content_weight * self.content_objective.forward(images, 1) \
+               + self.style_weight * self.style_objective.forward(images, 2)
+
+        return loss
 
     def optimize(self, epochs=512, optimizer=torch.optim.Adam, lr=5e-2, tv_loss=False):
         # send the model and the generator to the correct device
@@ -176,7 +241,7 @@ class StyleTransfer(obj.Objective):
                     opt.zero_grad()
 
                     # calculate loss using current objective function
-                    loss = self.forward()
+                    loss = self.forward()  # (forward pass is performed in self.forward())
 
                     # optimize the generator
                     loss.backward()
