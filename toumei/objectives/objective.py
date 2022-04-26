@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import tqdm
-from toumei.misc.tv_loss import TVLoss
+from toumei.objectives.tv_loss import TVLoss
 from toumei.parameterization import ImageGenerator
 
 
@@ -45,9 +45,10 @@ class Objective(object):
         print(f"    Criterion:  ")
         print(")")
 
-    def optimize(self, epochs=512, optimizer=torch.optim.Adam, lr=5e-3, tv_loss=False):
+    def optimize(self, epochs=512, optimizer=torch.optim.Adam, lr=5e-3, tv_loss=False, verbose=True):
         """
         Optimize the current objective
+        :param verbose: Show the progress bar
         :param epochs: the amount of optimization steps
         :param optimizer: the optimizer (default is Adam)
         :param lr: the learning rate (default is 0.05)
@@ -64,7 +65,7 @@ class Objective(object):
 
         criterion = TVLoss()
 
-        with tqdm.trange(epochs) as t:
+        with tqdm.trange(epochs, disable=not verbose) as t:
             t.set_description(self.__str__())
             for _ in t:
                 def step():
