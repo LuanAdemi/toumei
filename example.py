@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 import torchvision.transforms as T
 from toumei.models import Inception5h
@@ -40,9 +39,7 @@ fv.attach(model)
 fv.to(device)
 
 # optimize the objective
-fv.optimize(64)
-
-np.save("tests/fft_image", fv.generator.numpy(False))
+fv.optimize()
 
 # plot the results
 fv.generator.plot_image()

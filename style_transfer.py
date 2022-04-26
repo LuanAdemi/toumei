@@ -16,6 +16,4 @@ sf.to(torch.device("cuda"))
 
 sf.optimize()
 
-np.save("tests/style_transfer", sf.generator.numpy(False))
-
 sf.generator.plot_image()
