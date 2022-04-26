@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch
 from torch.nn import Parameter
 
-from toumei.misc.models.generator import Generator
+from toumei.models import Generator
 from toumei.parameterization.imagegenerator import ImageGenerator
 
 

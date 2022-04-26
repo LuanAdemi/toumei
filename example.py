@@ -1,13 +1,18 @@
+import numpy as np
 import torch
 import torchvision.transforms as T
-from lucent.modelzoo import inceptionv1
+from toumei.models import Inception5h
 
 # import toumei
-import toumei.probe as probe
 import toumei.objectives as obj
 import toumei.parameterization as param
 
+from toumei.objectives.utils import set_seed
+
 device = torch.device("cuda")
+
+# set the seed for reproducibility
+set_seed(42)
 
 # compose the image transformation for regularization trough transformations robustness
 transform = T.Compose([
@@ -16,10 +21,8 @@ transform = T.Compose([
     T.Lambda(lambda x: x*255 - 117)  # torchvision models need this
 ])
 
-
 # the model we want to analyze
-model = inceptionv1(pretrained=True)
-#probe.print_modules(model)
+model = Inception5h(pretrained=True)
 
 # define a feature visualization pipeline
 fv = obj.Pipeline(
@@ -37,7 +40,9 @@ fv.attach(model)
 fv.to(device)
 
 # optimize the objective
-fv.optimize(512)
+fv.optimize(64)
+
+np.save("tests/fft_image", fv.generator.numpy(False))
 
 # plot the results
 fv.generator.plot_image()
