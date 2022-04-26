@@ -9,8 +9,8 @@ Toumei is a feature visualization<sup>1</sup> library for pytorch providing a pi
 There are multiple parameterization approaches currently implemented in toumei:
 - pixel based image parameterization
 - fast fourier transformation based parameterization
-- ~~neural net based parameterization~~ (WIP)
-- ~~GAN based parameterization~~<sup>2</sup> (WIP)
+- neural net based parameterization (WIP)
+- GAN based parameterization<sup>2</sup> (WIP)
 
 # Quick start
 ```python

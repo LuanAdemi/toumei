@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import toumei.misc.models.helper_layers as helper_layers
+import toumei.models.helper_layers as helper_layers
 
 """
 The MIT License (MIT)

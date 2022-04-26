@@ -7,8 +7,8 @@ import tqdm
 import toumei.objectives as obj
 import toumei.parameterization as param
 
-from toumei.misc.models.inception5h import Inception5h
-from toumei.objectives.misc.utils import freeze_model
+from toumei.models import Inception5h
+from toumei.objectives.utils import freeze_model
 
 # standard layers for the style transfer
 standard_style_layers = [
@@ -231,7 +231,7 @@ class StyleTransfer(obj.Objective):
 
         return loss
 
-    def optimize(self, epochs=512, optimizer=torch.optim.Adam, lr=5e-2, tv_loss=False):
+    def optimize(self, epochs=512, optimizer=torch.optim.Adam, lr=5e-2, tv_loss=False, verbose=True):
         # send the model and the generator to the correct device
         self.model.to(self.device)
         self.model.eval()
@@ -240,7 +240,7 @@ class StyleTransfer(obj.Objective):
         # attach the optimizer to the parameters of the current generator
         opt = optimizer(self.generator.parameters, lr)
 
-        with tqdm.trange(epochs) as t:
+        with tqdm.trange(epochs, disable=not verbose) as t:
             t.set_description(self.__str__())
             for _ in t:
                 def step():

@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from toumei.objectives.misc.utils import freeze_model, unfreeze_model
+from toumei.objectives.utils import freeze_model, unfreeze_model
 from toumei.objectives.atoms import Atom
 from toumei.objectives.objective import Objective
 from toumei.parameterization import ImageGenerator

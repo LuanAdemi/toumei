@@ -4,7 +4,7 @@ import torch
 from torch.nn import Parameter
 
 from toumei.parameterization import ImageGenerator
-from toumei.misc.models.cppn import CPPN
+from toumei.models import CPPN
 
 
 class Neural(ImageGenerator):
