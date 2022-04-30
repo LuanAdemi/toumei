@@ -17,7 +17,7 @@ set_seed(42)
 transform = T.Compose([
     T.Pad(12),
     T.RandomRotation((-10, 11)),
-    T.Lambda(lambda x: x*255 - 117)  # torchvision models need this
+    T.Lambda(lambda x: x*255 - 117)  # inception needs this
 ])
 
 # the model we want to analyze
