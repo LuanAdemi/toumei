@@ -13,7 +13,7 @@ device = torch.device("cuda")
 # set the seed for reproducibility
 set_seed(42)
 
-# compose the image transformation for regularization trough transformations robustness
+# compose the image transformation for regularization through transformations robustness
 transform = T.Compose([
     T.Pad(12),
     T.RandomRotation((-10, 11)),
