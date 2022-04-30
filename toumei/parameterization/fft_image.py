@@ -21,6 +21,8 @@ class FFTImage(ImageGenerator):
         self.saturation = saturation
         self.w = shape[-2]
         self.h = shape[-1]
+
+        # generate fft frequencies for each dimension
         fy = torch.fft.fftfreq(self.h)[:, None]
 
         if self.w % 2 == 1:
@@ -29,9 +31,16 @@ class FFTImage(ImageGenerator):
             fx = torch.fft.fftfreq(self.w)[: self.w // 2 + 1]
 
         self.freq = torch.sqrt(fx ** 2 + fy ** 2)
+
+        # build the spectrum from the frequencies
         self.spectrum = (torch.randn(*self.shape[:2] + self.freq.shape + (2,)) * 0.01).requires_grad_(True)
 
     def freq_to_img(self, frequency):
+        """
+        Applies inverse fft on fft frequency
+        :param frequency: the frequency
+        :return: the resulting image
+        """
         return torch.fft.irfftn(torch.view_as_complex(frequency), s=(self.h, self.w), norm="ortho")
 
     @property
@@ -43,7 +52,10 @@ class FFTImage(ImageGenerator):
         return [self.spectrum]
 
     def get_image(self,  *args, **kwargs) -> torch.Tensor:
+        # rescale the image
         scale = 1.0 / torch.maximum(self.freq, torch.tensor(1.0 / max(self.w, self.h)))[None, None, ..., None]
         scaled_spectrum = scale * self.spectrum
+
+        # build the image from the rescaled spectrum by applying inverse fft
         image = self.freq_to_img(scaled_spectrum)[:self.shape[0], :self.shape[1], :self.h, :self.w] / self.saturation
         return torch.sigmoid(image)
