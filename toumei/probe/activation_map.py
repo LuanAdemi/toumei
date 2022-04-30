@@ -14,6 +14,7 @@ class ActivationMap(object):
         :param objective: the optimized objective
         :param unit: the unit of the desired activation map
         """
+
         self.objective = objective
         self.shape = shape
 
@@ -21,6 +22,14 @@ class ActivationMap(object):
         self.unit = unit
 
         self.activation_map = np.zeros(self.shape)
+
+    def _forward_pass(self):
+        """
+        Passes the feature image through the model
+        :return:
+        """
+        img = self.objective.generator.get_image()
+        self.model(img)
 
     def plot(self):
         """
