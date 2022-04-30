@@ -8,7 +8,7 @@ import toumei.parameterization as param
 
 from toumei.objectives.utils import set_seed
 
-device = torch.device("cuda")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # set the seed for reproducibility
 set_seed(42)
@@ -42,5 +42,5 @@ fv.to(device)
 fv.optimize()
 
 # plot the results
-fv.generator.plot_image()
+fv.plot()
 
