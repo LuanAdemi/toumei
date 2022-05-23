@@ -124,8 +124,8 @@
 </span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="kn">import</span> <span class="nn">toumei.objectives</span> <span class="k">as</span> <span class="nn">obj</span>
 </span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a><span class="kn">import</span> <span class="nn">toumei.parameterization</span> <span class="k">as</span> <span class="nn">param</span>
 </span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a>
-</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="kn">from</span> <span class="nn">toumei.misc.models.inception5h</span> <span class="kn">import</span> <span class="n">Inception5h</span>
-</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="kn">from</span> <span class="nn">toumei.objectives.misc.utils</span> <span class="kn">import</span> <span class="n">freeze_model</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="kn">from</span> <span class="nn">toumei.models</span> <span class="kn">import</span> <span class="n">Inception5h</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="kn">from</span> <span class="nn">toumei.objectives.utils</span> <span class="kn">import</span> <span class="n">freeze_model</span>
 </span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a>
 </span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="c1"># standard layers for the style transfer</span>
 </span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a><span class="n">standard_style_layers</span> <span class="o">=</span> <span class="p">[</span>
@@ -348,7 +348,7 @@
 </span><span id="L-230"><a href="#L-230"><span class="linenos">230</span></a>
 </span><span id="L-231"><a href="#L-231"><span class="linenos">231</span></a>        <span class="k">return</span> <span class="n">loss</span>
 </span><span id="L-232"><a href="#L-232"><span class="linenos">232</span></a>
-</span><span id="L-233"><a href="#L-233"><span class="linenos">233</span></a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">5e-2</span><span class="p">,</span> <span class="n">tv_loss</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+</span><span id="L-233"><a href="#L-233"><span class="linenos">233</span></a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">5e-2</span><span class="p">,</span> <span class="n">tv_loss</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 </span><span id="L-234"><a href="#L-234"><span class="linenos">234</span></a>        <span class="c1"># send the model and the generator to the correct device</span>
 </span><span id="L-235"><a href="#L-235"><span class="linenos">235</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 </span><span id="L-236"><a href="#L-236"><span class="linenos">236</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
@@ -357,7 +357,7 @@
 </span><span id="L-239"><a href="#L-239"><span class="linenos">239</span></a>        <span class="c1"># attach the optimizer to the parameters of the current generator</span>
 </span><span id="L-240"><a href="#L-240"><span class="linenos">240</span></a>        <span class="n">opt</span> <span class="o">=</span> <span class="n">optimizer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">lr</span><span class="p">)</span>
 </span><span id="L-241"><a href="#L-241"><span class="linenos">241</span></a>
-</span><span id="L-242"><a href="#L-242"><span class="linenos">242</span></a>        <span class="k">with</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">trange</span><span class="p">(</span><span class="n">epochs</span><span class="p">)</span> <span class="k">as</span> <span class="n">t</span><span class="p">:</span>
+</span><span id="L-242"><a href="#L-242"><span class="linenos">242</span></a>        <span class="k">with</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">trange</span><span class="p">(</span><span class="n">epochs</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">verbose</span><span class="p">)</span> <span class="k">as</span> <span class="n">t</span><span class="p">:</span>
 </span><span id="L-243"><a href="#L-243"><span class="linenos">243</span></a>            <span class="n">t</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="fm">__str__</span><span class="p">())</span>
 </span><span id="L-244"><a href="#L-244"><span class="linenos">244</span></a>            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
 </span><span id="L-245"><a href="#L-245"><span class="linenos">245</span></a>                <span class="k">def</span> <span class="nf">step</span><span class="p">():</span>
@@ -1015,7 +1015,7 @@ Also performs transforms if a transform function was specified.</p>
 </span><span id="StyleTransfer-231"><a href="#StyleTransfer-231"><span class="linenos">231</span></a>
 </span><span id="StyleTransfer-232"><a href="#StyleTransfer-232"><span class="linenos">232</span></a>        <span class="k">return</span> <span class="n">loss</span>
 </span><span id="StyleTransfer-233"><a href="#StyleTransfer-233"><span class="linenos">233</span></a>
-</span><span id="StyleTransfer-234"><a href="#StyleTransfer-234"><span class="linenos">234</span></a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">5e-2</span><span class="p">,</span> <span class="n">tv_loss</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+</span><span id="StyleTransfer-234"><a href="#StyleTransfer-234"><span class="linenos">234</span></a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">5e-2</span><span class="p">,</span> <span class="n">tv_loss</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 </span><span id="StyleTransfer-235"><a href="#StyleTransfer-235"><span class="linenos">235</span></a>        <span class="c1"># send the model and the generator to the correct device</span>
 </span><span id="StyleTransfer-236"><a href="#StyleTransfer-236"><span class="linenos">236</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 </span><span id="StyleTransfer-237"><a href="#StyleTransfer-237"><span class="linenos">237</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
@@ -1024,7 +1024,7 @@ Also performs transforms if a transform function was specified.</p>
 </span><span id="StyleTransfer-240"><a href="#StyleTransfer-240"><span class="linenos">240</span></a>        <span class="c1"># attach the optimizer to the parameters of the current generator</span>
 </span><span id="StyleTransfer-241"><a href="#StyleTransfer-241"><span class="linenos">241</span></a>        <span class="n">opt</span> <span class="o">=</span> <span class="n">optimizer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">lr</span><span class="p">)</span>
 </span><span id="StyleTransfer-242"><a href="#StyleTransfer-242"><span class="linenos">242</span></a>
-</span><span id="StyleTransfer-243"><a href="#StyleTransfer-243"><span class="linenos">243</span></a>        <span class="k">with</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">trange</span><span class="p">(</span><span class="n">epochs</span><span class="p">)</span> <span class="k">as</span> <span class="n">t</span><span class="p">:</span>
+</span><span id="StyleTransfer-243"><a href="#StyleTransfer-243"><span class="linenos">243</span></a>        <span class="k">with</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">trange</span><span class="p">(</span><span class="n">epochs</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">verbose</span><span class="p">)</span> <span class="k">as</span> <span class="n">t</span><span class="p">:</span>
 </span><span id="StyleTransfer-244"><a href="#StyleTransfer-244"><span class="linenos">244</span></a>            <span class="n">t</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="fm">__str__</span><span class="p">())</span>
 </span><span id="StyleTransfer-245"><a href="#StyleTransfer-245"><span class="linenos">245</span></a>            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
 </span><span id="StyleTransfer-246"><a href="#StyleTransfer-246"><span class="linenos">246</span></a>                <span class="k">def</span> <span class="nf">step</span><span class="p">():</span>
@@ -1157,12 +1157,6 @@ Also performs transforms if a transform function was specified.</p>
 <ul>
 <li><strong>device</strong>:  the device</li>
 </ul>
-
-<h6 id="returns">Returns</h6>
-
-<blockquote>
-  <p>nothing</p>
-</blockquote>
 </div>
 
 
@@ -1175,8 +1169,6 @@ Also performs transforms if a transform function was specified.</p>
 
     
             <div class="docstring"><p>Returns the generator object</p>
-
-<h6 id="returns">Returns</h6>
 </div>
 
 
@@ -1223,13 +1215,14 @@ implementing an objective.</p>
     epochs=512,
     optimizer=&lt;class &#39;torch.optim.adam.Adam&#39;&gt;,
     lr=0.05,
-    tv_loss=False
+    tv_loss=False,
+    verbose=True
 )</span>:
     </div>
 
             <details>
             <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="StyleTransfer.optimize-234"><a href="#StyleTransfer.optimize-234"><span class="linenos">234</span></a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">5e-2</span><span class="p">,</span> <span class="n">tv_loss</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="StyleTransfer.optimize-234"><a href="#StyleTransfer.optimize-234"><span class="linenos">234</span></a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">5e-2</span><span class="p">,</span> <span class="n">tv_loss</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 </span><span id="StyleTransfer.optimize-235"><a href="#StyleTransfer.optimize-235"><span class="linenos">235</span></a>        <span class="c1"># send the model and the generator to the correct device</span>
 </span><span id="StyleTransfer.optimize-236"><a href="#StyleTransfer.optimize-236"><span class="linenos">236</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 </span><span id="StyleTransfer.optimize-237"><a href="#StyleTransfer.optimize-237"><span class="linenos">237</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
@@ -1238,7 +1231,7 @@ implementing an objective.</p>
 </span><span id="StyleTransfer.optimize-240"><a href="#StyleTransfer.optimize-240"><span class="linenos">240</span></a>        <span class="c1"># attach the optimizer to the parameters of the current generator</span>
 </span><span id="StyleTransfer.optimize-241"><a href="#StyleTransfer.optimize-241"><span class="linenos">241</span></a>        <span class="n">opt</span> <span class="o">=</span> <span class="n">optimizer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">lr</span><span class="p">)</span>
 </span><span id="StyleTransfer.optimize-242"><a href="#StyleTransfer.optimize-242"><span class="linenos">242</span></a>
-</span><span id="StyleTransfer.optimize-243"><a href="#StyleTransfer.optimize-243"><span class="linenos">243</span></a>        <span class="k">with</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">trange</span><span class="p">(</span><span class="n">epochs</span><span class="p">)</span> <span class="k">as</span> <span class="n">t</span><span class="p">:</span>
+</span><span id="StyleTransfer.optimize-243"><a href="#StyleTransfer.optimize-243"><span class="linenos">243</span></a>        <span class="k">with</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">trange</span><span class="p">(</span><span class="n">epochs</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">verbose</span><span class="p">)</span> <span class="k">as</span> <span class="n">t</span><span class="p">:</span>
 </span><span id="StyleTransfer.optimize-244"><a href="#StyleTransfer.optimize-244"><span class="linenos">244</span></a>            <span class="n">t</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="fm">__str__</span><span class="p">())</span>
 </span><span id="StyleTransfer.optimize-245"><a href="#StyleTransfer.optimize-245"><span class="linenos">245</span></a>            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
 </span><span id="StyleTransfer.optimize-246"><a href="#StyleTransfer.optimize-246"><span class="linenos">246</span></a>                <span class="k">def</span> <span class="nf">step</span><span class="p">():</span>
@@ -1264,17 +1257,12 @@ implementing an objective.</p>
 <h6 id="parameters">Parameters</h6>
 
 <ul>
+<li><strong>verbose</strong>:  Show the progress bar</li>
 <li><strong>epochs</strong>:  the amount of optimization steps</li>
 <li><strong>optimizer</strong>:  the optimizer (default is Adam)</li>
 <li><strong>lr</strong>:  the learning rate (default is 0.05)</li>
 <li><strong>tv_loss</strong>:  enable total variance loss</li>
 </ul>
-
-<h6 id="returns">Returns</h6>
-
-<blockquote>
-  <p>nothing</p>
-</blockquote>
 </div>
 
 
@@ -1286,6 +1274,7 @@ implementing an objective.</p>
                                 <dd id="StyleTransfer.attach" class="function">attach</dd>
                 <dd id="StyleTransfer.detach" class="function">detach</dd>
                 <dd id="StyleTransfer.summary" class="function">summary</dd>
+                <dd id="StyleTransfer.plot" class="function">plot</dd>
 
             </div>
                                 </dl>

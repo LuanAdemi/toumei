@@ -14,6 +14,7 @@ class Objective(object):
         super(Objective, self).__init__()
         self.model = None
         self.children = []
+        self.optimized = False
         self.device = torch.device("cpu")
 
     def __str__(self) -> str:
@@ -23,14 +24,12 @@ class Objective(object):
         """
         Attach to the given model.
         :param model: The inspected model
-        :return: nothing
         """
         return NotImplementedError
 
     def detach(self):
         """
         Detach from the current model
-        :return: nothing
         """
 
         return NotImplementedError
@@ -38,7 +37,6 @@ class Objective(object):
     def summary(self):
         """
         Prints an overview of the current objective
-        :return: nothing
         """
         print(f"Objective(")
         print(f"    Generator:  {self.generator}")
@@ -53,12 +51,14 @@ class Objective(object):
         :param optimizer: the optimizer (default is Adam)
         :param lr: the learning rate (default is 0.05)
         :param tv_loss: enable total variance loss
-        :return: nothing
         """
         # send the model and the generator to the correct device
         self.model.to(self.device)
         self.model.eval()
         self.generator.to(self.device)
+
+        # set the objective to optimized
+        self.optimized = True
 
         # attach the optimizer to the parameters of the current generator
         opt = optimizer(self.generator.parameters, lr)
@@ -93,7 +93,6 @@ class Objective(object):
         """
         Sets the device for the optimization process
         :param device: the device
-        :return: nothing
         """
         self.device = device
 
@@ -106,11 +105,16 @@ class Objective(object):
         """
         return NotImplementedError
 
+    def plot(self):
+        """
+        Plots the current feature visualization result
+        """
+        self.generator.plot_image()
+
     @property
     def generator(self) -> ImageGenerator:
         """
         Returns the generator object
-        :return:
         """
         return NotImplementedError
 

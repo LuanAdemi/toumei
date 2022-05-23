@@ -142,11 +142,11 @@
                 
                         <details>
             <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="L-0"><a href="#L-0"><span class="linenos"> 0</span></a><span class="kn">from</span> <span class="nn">toumei.objectives.objective</span> <span class="kn">import</span> <span class="n">Objective</span>
-</span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="kn">from</span> <span class="nn">toumei.objectives.misc.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
-</span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a><span class="kn">from</span> <span class="nn">toumei.objectives.atoms</span> <span class="kn">import</span> <span class="n">Channel</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">,</span> <span class="n">Layer</span>
-</span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a><span class="kn">from</span> <span class="nn">toumei.objectives.operations</span> <span class="kn">import</span> <span class="n">Add</span><span class="p">,</span> <span class="n">Multiply</span>
-</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a><span class="kn">from</span> <span class="nn">toumei.objectives.atoms.atom</span> <span class="kn">import</span> <span class="n">Atom</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="L-0"><a href="#L-0"><span class="linenos"> 0</span></a><span class="kn">from</span> <span class="nn">toumei.objectives.atoms.atom</span> <span class="kn">import</span> <span class="n">Atom</span>
+</span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="kn">from</span> <span class="nn">toumei.objectives.objective</span> <span class="kn">import</span> <span class="n">Objective</span>
+</span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a><span class="kn">from</span> <span class="nn">toumei.objectives.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
+</span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a><span class="kn">from</span> <span class="nn">toumei.objectives.atoms</span> <span class="kn">import</span> <span class="n">Channel</span><span class="p">,</span> <span class="n">Neuron</span><span class="p">,</span> <span class="n">Layer</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a><span class="kn">from</span> <span class="nn">toumei.objectives.operations</span> <span class="kn">import</span> <span class="n">Add</span><span class="p">,</span> <span class="n">Multiply</span>
 </span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a>
 </span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
 </span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a>    <span class="s2">&quot;Channel&quot;</span><span class="p">,</span>
@@ -935,6 +935,7 @@ This calls the root, which induces recursive calls for each child of the module<
                                 <dd id="Pipeline.summary" class="function">summary</dd>
                 <dd id="Pipeline.optimize" class="function">optimize</dd>
                 <dd id="Pipeline.to" class="function">to</dd>
+                <dd id="Pipeline.plot" class="function">plot</dd>
 
             </div>
                                 </dl>

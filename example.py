@@ -8,16 +8,16 @@ import toumei.parameterization as param
 
 from toumei.objectives.utils import set_seed
 
-device = torch.device("cuda")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # set the seed for reproducibility
 set_seed(42)
 
-# compose the image transformation for regularization trough transformations robustness
+# compose the image transformation for regularization through transformations robustness
 transform = T.Compose([
     T.Pad(12),
     T.RandomRotation((-10, 11)),
-    T.Lambda(lambda x: x*255 - 117)  # torchvision models need this
+    T.Lambda(lambda x: x*255 - 117)  # inception needs this
 ])
 
 # the model we want to analyze
@@ -42,5 +42,5 @@ fv.to(device)
 fv.optimize()
 
 # plot the results
-fv.generator.plot_image()
+fv.plot()
 

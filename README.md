@@ -12,6 +12,10 @@ There are multiple parameterization approaches currently implemented in toumei:
 - neural net based parameterization (WIP)
 - GAN based parameterization<sup>2</sup> (WIP)
 
+TODOs:
+- implement some language model interpretability stuff (for example ROME [3])
+- add some experiments to the project (possibly some RL interpretability stuff like analyzing policy ResNets)
+
 # Quick start
 ```python
 # the model we want to inspect
@@ -45,3 +49,5 @@ objective.optimize()
 [1] https://distill.pub/2017/feature-visualization/
 
 [2] https://arxiv.org/abs/1605.09304
+
+[3] https://rome.baulab.info/
