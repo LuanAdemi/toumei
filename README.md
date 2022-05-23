@@ -13,7 +13,7 @@ There are multiple parameterization approaches currently implemented in toumei:
 - GAN based parameterization<sup>2</sup> (WIP)
 
 TODOs:
-- implement some language model interpretability stuff (for example ROME [3])
+- implement some language model interpretability stuff (for example ROME [3]) -> see dev branch
 - add some experiments to the project (possibly some RL interpretability stuff like analyzing policy ResNets)
 
 # Quick start
