@@ -1,6 +1,6 @@
 import torch
 
-from toumei.objectives.operations.operation import Operation
+from toumei.cnns.objectives.operations.operation import Operation
 
 
 class Add(Operation):

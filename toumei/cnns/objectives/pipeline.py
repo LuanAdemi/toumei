@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
 
-from toumei.objectives.utils import freeze_model, unfreeze_model
-from toumei.objectives.atoms import Atom
-from toumei.objectives.objective import Objective
-from toumei.parameterization import ImageGenerator
+from toumei.cnns.objectives.utils import freeze_model, unfreeze_model
+from toumei.cnns.objectives.atoms import Atom
+from toumei.cnns.objectives.objective import Objective
+from toumei.cnns.parameterization import ImageGenerator
 
 
 class Pipeline(Objective):

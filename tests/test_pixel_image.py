@@ -1,9 +1,9 @@
 import sys
 
-import toumei.objectives as obj
-import toumei.parameterization as param
+import toumei.cnns.objectives as obj
+import toumei.cnns.parameterization as param
 from toumei.models import Inception5h
-from toumei.objectives.utils import set_seed
+from toumei.cnns.objectives.utils import set_seed
 
 import torchvision.transforms as T
 import torch

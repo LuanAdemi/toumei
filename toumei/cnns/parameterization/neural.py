@@ -3,7 +3,7 @@ from typing import Iterator
 import torch
 from torch.nn import Parameter
 
-from toumei.parameterization import ImageGenerator
+from toumei.cnns.parameterization import ImageGenerator
 from toumei.models import CPPN
 
 

@@ -1,10 +1,12 @@
 import numpy as np
 
-import toumei.objectives as obj
+import toumei.cnns.objectives as obj
 
 
 class ActivationMap(object):
     """
+    WIP
+    
     This class generates an activation map for the specified unit using the given optimized(!) objective.
     An activation map gives an insight on the (spatial) contribution of a feature in other units.
     """
