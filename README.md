@@ -4,7 +4,7 @@
 
 ![PyTorch](https://img.shields.io/badge/pytorch-1.10.0%2B-success)
 
-Toumei is a feature visualization<sup>1</sup> library for pytorch providing a pipeline like work-flow for defining and optimizing custom objective functions. It implements every main idea presented in the distill articles and provides a user friendly interface for analyzing models.
+Toumei is a ~~feature visualization<sup>1</sup>~~ interpretability library for pytorch providing a pipeline like work-flow for defining and optimizing custom objective functions. It implements every main idea presented in the distill articles and provides a user friendly interface for analyzing models.
 
 There are multiple parameterization approaches currently implemented in toumei:
 - pixel based image parameterization
