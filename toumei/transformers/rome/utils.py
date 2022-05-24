@@ -24,7 +24,7 @@ class TracingHook(object):
             if out_f is not None:
                 output = out_f(output, self.module, *self.out_f_params)
 
-            self.output = recursive_copy(output, clone=False, detach=False, retain_grad=False)
+            self.output = output
 
             return output
 
@@ -65,6 +65,51 @@ class TracingHookDict(OrderedDict):
             hook.remove()
 
 
+def nested_children(m: torch.nn.Module):
+    """
+    Returns the submodules of a model
+
+    :param m: the model
+    :returns: the submodules
+    """
+    children = dict(m.named_children())
+    output = {}
+
+    if "mlp" in children:
+        return m
+    if children == {}:
+        return m
+    else:
+        for name, child in children.items():
+            try:
+                output[name] = nested_children(child)
+            except TypeError:
+                output[name] = nested_children(child)
+    return output
+
+
+def plot_trace_heatmap_sns(result):
+    """
+    Plots the tracing heat map using the given result
+
+    :param result: the tracing result dict
+    """
+    differences = result["scores"]
+    answer = result["answer"]
+
+    labels = list(result["input_tokens"])
+
+    ax = sns.heatmap(differences, yticklabels=labels, cmap="Blues", cbar_kws={'label': f"p({str(answer).strip()})"})
+
+    ax.set_title("Causal tracing result")
+    ax.set_xlabel("Block")
+    ax.set_ylabel("Token")
+
+    ax.figure.subplots_adjust(left=0.23)
+
+    plt.show()
+
+
 """
 The following util functions are from the official ROME implementation
 """
@@ -102,12 +147,27 @@ def generate_inputs(prompts, tokenizer: transformers.PreTrainedTokenizer, device
 
 
 def decode_tokens(tokenizer, token_array):
+    """
+    Decodes the given tokens to their corresponding string using the specified tokenizer
+
+    :param tokenizer: the tokenizer for decoding
+    :param token_array: a list of the tokens to decode
+    :returns: a list with the decoded tokens
+    """
     if hasattr(token_array, "shape") and len(token_array.shape) > 1:
         return [decode_tokens(tokenizer, row) for row in token_array]
     return [tokenizer.decode([t]) for t in token_array]
 
 
 def find_token_range(tokenizer, token_array, substring):
+    """
+    Find the token range (for the subject) by searching for a substring in the token_array
+
+    :param tokenizer: the tokenizer
+    :param token_array: a list of tokens
+    :param substring: the substring for calculating the token range
+    :returns: the token range
+    """
     toks = decode_tokens(tokenizer, token_array)
     whole_string = "".join(toks)
     char_loc = whole_string.index(substring)
@@ -123,78 +183,18 @@ def find_token_range(tokenizer, token_array, substring):
     return tok_start, tok_end
 
 
-def predict_token(mt, prompts, return_p=False):
-    inp = generate_inputs(mt.tokenizer, prompts)
-    preds, p = predict_from_input(mt.model, inp)
-    result = [mt.tokenizer.decode(c) for c in preds]
-    if return_p:
-        result = (result, p)
-    return result
-
-
 def predict_from_input(model, inp):
+    """
+    Predict the next token given the input and the model
+
+    :param model: the model for inference
+    :param inp: the input
+    :returns: the predicted token and it's probability
+    """
+    # forward-pass
     out = model(**inp)["logits"]
+
+    # pass the logits through a softmax function to get probs
     probs = torch.softmax(out[:, -1], dim=1)
     p, preds = torch.max(probs, dim=1)
     return preds, p
-
-
-def nested_children(m: torch.nn.Module):
-    children = dict(m.named_children())
-    output = {}
-
-    if "mlp" in children:
-        return m
-    if children == {}:
-        return m
-    else:
-        for name, child in children.items():
-            try:
-                output[name] = nested_children(child)
-            except TypeError:
-                output[name] = nested_children(child)
-    return output
-
-
-def plot_trace_heatmap_sns(result):
-    differences = result["scores"]
-    answer = result["answer"]
-
-    labels = list(result["input_tokens"])
-
-    ax = sns.heatmap(differences, yticklabels=labels, cmap="Blues", cbar_kws={'label': f"p({str(answer).strip()})"})
-
-    ax.set_title("Causal tracing result")
-    ax.set_xlabel("Block")
-    ax.set_ylabel("Token")
-
-    ax.figure.subplots_adjust(left=0.23)
-
-    plt.show()
-
-
-def recursive_copy(x, clone=None, detach=None, retain_grad=None):
-    """
-    Copies a reference to a tensor, or an object that contains tensors,
-    optionally detaching and cloning the tensor(s).  If retain_grad is
-    true, the original tensors are marked to have grads retained.
-    """
-    if not clone and not detach and not retain_grad:
-        return x
-    if isinstance(x, torch.Tensor):
-        if retain_grad:
-            if not x.requires_grad:
-                x.requires_grad = True
-            x.retain_grad()
-        elif detach:
-            x = x.detach()
-        if clone:
-            x = x.clone()
-        return x
-    # Only dicts, lists, and tuples (and subclasses) can be copied.
-    if isinstance(x, dict):
-        return type(x)({k: recursive_copy(v) for k, v in x.items()})
-    elif isinstance(x, (list, tuple)):
-        return type(x)([recursive_copy(v) for v in x])
-    else:
-        assert False, f"Unknown type {type(x)} cannot be broken into tensors."

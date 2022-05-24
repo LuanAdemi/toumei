@@ -1,7 +1,7 @@
 from collections import defaultdict
 from toumei.cnns.objectives.utils import freeze_model
 
-from tqdm import tqdm, trange
+from tqdm import trange
 
 from transformers import PreTrainedModel, PreTrainedTokenizer
 
@@ -128,14 +128,10 @@ class CausalTracer(object):
 
         result = dict(
             scores=table,
-            low_score=low_score,
-            high_score=base_score,
             input_ids=inputs["input_ids"][0],
             input_tokens=decode_tokens(self.tokenizer, inputs["input_ids"][0]),
             subject_range=token_range,
-            answer=answer,
-            window=False,
-            kind="",
+            answer=answer
         )
 
         if verbose:
