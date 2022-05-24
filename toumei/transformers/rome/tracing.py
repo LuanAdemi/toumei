@@ -5,7 +5,7 @@ from tqdm import trange
 
 from transformers import PreTrainedModel, PreTrainedTokenizer
 
-from utils import *
+from toumei.transformers.rome.utils import *
 
 
 class CausalTracer(object):

@@ -1,12 +1,12 @@
 from toumei.misc.styletransfer import StyleTransfer
-from toumei.objectives.utils import set_seed
+from toumei.cnns.objectives.utils import set_seed
 from PIL import Image
 import torch
 
 import numpy as np
 
-content = np.asarray(Image.open("assets/big_ben.png")) / 255
-style = np.asarray(Image.open("assets/style.png")) / 255
+content = np.asarray(Image.open("../assets/big_ben.png")) / 255
+style = np.asarray(Image.open("../assets/style.png")) / 255
 
 set_seed(42)
 
