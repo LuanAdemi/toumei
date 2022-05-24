@@ -1,7 +1,7 @@
 import torch
 
-from toumei.objectives.atoms.atom import Atom
-from toumei.objectives.utils import convert_unit_string
+from toumei.cnns.objectives.atoms.atom import Atom
+from toumei.cnns.objectives.utils import convert_unit_string
 
 
 class Neuron(Atom):

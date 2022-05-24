@@ -1,6 +1,6 @@
 import torch
 
-from toumei.parameterization import ImageGenerator
+from toumei.cnns.parameterization import ImageGenerator
 
 
 class FFTImage(ImageGenerator):

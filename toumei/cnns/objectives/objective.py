@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 import tqdm
-from toumei.objectives.tv_loss import TVLoss
-from toumei.parameterization import ImageGenerator
+from toumei.cnns.objectives.tv_loss import TVLoss
+from toumei.cnns.parameterization import ImageGenerator
 
 
 class Objective(object):

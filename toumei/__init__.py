@@ -1,6 +1,5 @@
 __all__ = [
-    'objectives',
-    'parameterization',
+    'cnns',
     'probe',
     'models',
     "misc"

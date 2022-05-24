@@ -3,10 +3,14 @@ import torchvision.transforms as T
 from toumei.models import Inception5h
 
 # import toumei
-import toumei.objectives as obj
-import toumei.parameterization as param
+import toumei.cnns.objectives as obj
+import toumei.cnns.parameterization as param
 
-from toumei.objectives.utils import set_seed
+from toumei.cnns.objectives.utils import set_seed
+
+"""
+Performing feature visualisation on the Inception model 
+"""
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -29,7 +33,7 @@ fv = obj.Pipeline(
     param.Transform(param.FFTImage(1, 3, 224, 224), transform),
 
     # the objective function
-    obj.Channel("mixed4b_3x3_pre_relu_conv:79")
+    obj.Channel("mixed3a:74")
 )
 
 # attach the pipeline to the alexNet model

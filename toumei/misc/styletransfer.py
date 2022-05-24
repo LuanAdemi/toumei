@@ -4,11 +4,11 @@ import torch.nn as nn
 import torchvision.transforms as T
 import tqdm
 
-import toumei.objectives as obj
-import toumei.parameterization as param
+import toumei.cnns.objectives as obj
+import toumei.cnns.parameterization as param
 
 from toumei.models import Inception5h
-from toumei.objectives.utils import freeze_model
+from toumei.cnns.objectives.utils import freeze_model
 
 # standard layers for the style transfer
 standard_style_layers = [
