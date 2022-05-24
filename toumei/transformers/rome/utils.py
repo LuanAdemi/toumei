@@ -99,8 +99,7 @@ def plot_trace_heatmap_sns(result):
     labels = list(result["input_tokens"])
 
     ax = sns.heatmap(differences, yticklabels=labels, cmap="Blues",
-                     cbar_kws={'label': f"p({str(answer).strip()})"},
-                     vmin=result["worst_score"], vmax=result["best_score"])
+                     cbar_kws={'label': f"p({str(answer).strip()})"})
 
     ax.set_title("Causal tracing result")
     ax.set_xlabel("Block")

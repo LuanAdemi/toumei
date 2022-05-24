@@ -1,10 +1,10 @@
 import torch
-from transformers import GPTNeoForCausalLM, GPT2Tokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from toumei.transformers.rome.tracing import CausalTracer
 
-model = GPTNeoForCausalLM.from_pretrained("EleutherAI/gpt-neo-1.3B", torch_dtype=torch.float16)
-tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-neo-1.3B")
+model = AutoModelForCausalLM.from_pretrained("gpt2-xl", torch_dtype=torch.float16)
+tokenizer = AutoTokenizer.from_pretrained("gpt2-xl")
 
 model.to(torch.device("cuda"))
 
