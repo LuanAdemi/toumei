@@ -138,7 +138,10 @@ class CausalTracer(object):
             kind="",
         )
 
-        plot_trace_heatmap(result)
+        if verbose:
+            plot_trace_heatmap_sns(result)
+
+        return result
 
     def _forward_pass(self, inputs, patching_states: list, answer_token: int, token_range: tuple):
         """
