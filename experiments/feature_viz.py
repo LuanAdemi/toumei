@@ -8,6 +8,10 @@ import toumei.cnns.parameterization as param
 
 from toumei.cnns.objectives.utils import set_seed
 
+"""
+Performing feature visualisation on the Inception model 
+"""
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # set the seed for reproducibility

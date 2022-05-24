@@ -3,6 +3,10 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from toumei.transformers.rome.tracing import CausalTracer
 
+"""
+Locating factual knowledge in GPT like models using causal tracing
+"""
+
 # load gpt2 from huggingface
 model = AutoModelForCausalLM.from_pretrained("gpt2-xl", torch_dtype=torch.float16)
 tokenizer = AutoTokenizer.from_pretrained("gpt2-xl")

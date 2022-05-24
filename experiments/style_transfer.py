@@ -5,6 +5,10 @@ import torch
 
 import numpy as np
 
+"""
+Perform style transfer by optimizing activation difference using the inception model
+"""
+
 content = np.asarray(Image.open("../assets/big_ben.png")) / 255
 style = np.asarray(Image.open("../assets/style.png")) / 255
 
