@@ -1,7 +1,7 @@
 from collections import defaultdict
+from toumei.cnns.objectives.utils import freeze_model
 
-import torch
-import torch.nn as nn
+from tqdm import tqdm, trange
 
 from transformers import PreTrainedModel, PreTrainedTokenizer
 
@@ -17,6 +17,7 @@ def _patching_rule(x: torch.Tensor, module,
                    noise_coeff: float = 0.1):
     """
     Defines the patching rules for the different modules (layers) used in the tracing process
+
     :param x: the previous hidden state of the knowledge flow, where h[0] is uncorrupted h[1] is corrupted
     :param module: the current module
     :returns: the patched hidden state
@@ -41,24 +42,36 @@ def _patching_rule(x: torch.Tensor, module,
 
 class CausalTracer(object):
     """
-    Performs causal tracing on hugging face transformers models (should work on other transformer
-    implementations when the syntax matches)
+    Performs causal tracing on hugging face transformers models
+    (should work on other transformer implementations when the syntax matches)
 
     Based on https://github.com/kmeng01/rome
     """
 
     def __init__(self, model: PreTrainedModel, tokenizer: PreTrainedTokenizer):
+        """
+        Initiates a new CausalTracer object using the given model and tokenizer
+
+        :param model: the transformer model we would like to trace
+        :param tokenizer: the tokenizer
+        """
         self.model = model
         self.tokenizer = tokenizer
+
+        # prep the model for tracing
+        self.model.eval()
+        freeze_model(self.model)
 
         # set the default device to the models device
         self.device = model.device
 
+        # get the mlp layers
         self.layers = nested_children(self.model)
 
     def to(self, device):
         """
         Sends the CausalTracer to the corresponding device
+
         :param device: the new device
         """
         self.device = device
@@ -66,12 +79,14 @@ class CausalTracer(object):
         # update the model device
         self.model.to(device)
 
-    def trace(self, prompt: str, subject):
+    def trace(self, prompt: str, subject, verbose=False):
         """
+        Performs causal tracing using the specified prompt and subject
 
-        :param subject:
-        :param prompt:
-        :return:
+        :param verbose: Print some info about the tracing process
+        :param subject: The subject of the prompt
+        :param prompt: The prompt
+        :returns: The tracing result
         """
 
         # create a batch for the forward pass
@@ -88,9 +103,18 @@ class CausalTracer(object):
 
         low_score = self._forward_pass(inputs, [], answer_token, token_range).item()
 
+        # build the tracing score table
         table = []
 
-        for t in range(inputs["input_ids"].shape[1]):
+        num_tokens = inputs["input_ids"].shape[1]
+
+        if verbose:
+            print(f"Prompt: {prompt},")
+            print(f"Subject: {subject},")
+            print(f"Answer: {answer}")
+            print(f"Performing causal tracing for {num_tokens} tokens...")
+
+        for t in trange(num_tokens, disable=not verbose):
             row = []
             for layer in self.layers["transformer"]["h"]:
                 # add the current mlp to the patching layers
@@ -119,9 +143,12 @@ class CausalTracer(object):
     def _forward_pass(self, inputs, patching_states: list, answer_token: int, token_range: tuple):
         """
         Performs a single causal trace
-        :param inputs:
-        :param patching_states:
-        :return:
+
+        :param inputs: the input tokens
+        :param patching_states: the state we are going to patch
+        :param answer_token: the token of the answer
+        :param token_range: the token range of the subject
+        :returns: the probability of the answer token
         """
 
         patch_spec = defaultdict(list)

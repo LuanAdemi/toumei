@@ -71,10 +71,11 @@ The following util functions are from the official ROME implementation
 
 def generate_inputs(prompts, tokenizer: transformers.PreTrainedTokenizer, device):
     """
-    Creates a batch of the same tokens using the given prompt
-    :param prompt: the input prompt to tokenize
+    Creates a batch of input tokens using the prompts by padding them to maxlen
+
+    :param prompts: the input prompts to tokenize
     :param tokenizer: the tokenizer
-    :param batch_size: the batch size
+    :param device: the device for the generated tensors
     :returns: the created batch
     """
 

@@ -1,5 +1,4 @@
 import torch
-from toumei.probe import get_modules
 from transformers import GPTNeoForCausalLM, GPT2Tokenizer
 
 from toumei.transformers.rome.tracing import CausalTracer
@@ -11,7 +10,9 @@ model.to(torch.device("cuda"))
 
 prompt = "Karlsruhe Institute of Technology is located in the country of"
 
+subject = "Karlsruhe Institute of Technology"
+
 tracer = CausalTracer(model, tokenizer)
 
-tracer.trace(prompt, "Karlsruhe Institute of Technology")
+tracer.trace(prompt, subject, verbose=True)
 
