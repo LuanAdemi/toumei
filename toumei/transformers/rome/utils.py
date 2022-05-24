@@ -14,15 +14,14 @@ class TracingHook(object):
     A simple network hook for wrapping the forward function of modules.
     It can store and edit the hidden state.
     """
-    def __init__(self, name, module: nn.Module, out_f=None, out_f_params=None):
+    def __init__(self, name, module: nn.Module, out_f=None):
         self.name = name
         self.module = module
         self.output = None
-        self.out_f_params = out_f_params
 
         def create_hook(m, inputs, output):
             if out_f is not None:
-                output = out_f(output, self.module, *self.out_f_params)
+                output = out_f(output, self.module)
 
             self.output = output
 
@@ -48,14 +47,14 @@ class TracingHookDict(OrderedDict):
     """
     A OrderedDict storing TracingHooks for the specified layers
     """
-    def __init__(self, model: nn.Module, layers: dict, out_f=None, out_f_params=None):
+    def __init__(self, model: nn.Module, layers: dict, out_f=None):
         super().__init__()
 
         self.model = model
         self.layers = layers
 
         for key, value in layers.items():
-            self[key] = TracingHook(key, value, out_f, out_f_params)
+            self[key] = TracingHook(key, value, out_f)
 
     def remove(self):
         """
@@ -99,7 +98,9 @@ def plot_trace_heatmap_sns(result):
 
     labels = list(result["input_tokens"])
 
-    ax = sns.heatmap(differences, yticklabels=labels, cmap="Blues", cbar_kws={'label': f"p({str(answer).strip()})"})
+    ax = sns.heatmap(differences, yticklabels=labels, cmap="Blues",
+                     cbar_kws={'label': f"p({str(answer).strip()})"},
+                     vmin=result["worst_score"], vmax=result["best_score"])
 
     ax.set_title("Causal tracing result")
     ax.set_xlabel("Block")

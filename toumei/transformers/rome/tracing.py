@@ -8,38 +8,6 @@ from transformers import PreTrainedModel, PreTrainedTokenizer
 from utils import *
 
 
-def untuple(x):
-    return x[0] if isinstance(x, tuple) else x
-
-
-def _patching_rule(x: torch.Tensor, module,
-                   patching_states: dict, token_range: tuple, device,
-                   noise_coeff: float = 0.1):
-    """
-    Defines the patching rules for the different modules (layers) used in the tracing process
-
-    :param x: the previous hidden state of the knowledge flow, where h[0] is uncorrupted h[1] is corrupted
-    :param module: the current module
-    :returns: the patched hidden state
-    """
-
-    # define the patching rule for the word embedding in the wte layer
-    if isinstance(module, nn.Embedding):
-        start, end = token_range
-        # corrupt the tokens in the given range by adding random gaussian noise
-        x[1:, start:end] += noise_coeff * torch.randn(x.shape[0] - 1, end - start, x.shape[2]).to(device)
-        return x
-
-    if module not in patching_states:
-        return x
-
-    h = untuple(x)
-    # restore the uncorrupted hidden state from the first forward pass
-    for token in patching_states[module]:
-        h[1:, token] = h[0, token]
-    return x
-
-
 class CausalTracer(object):
     """
     Performs causal tracing on hugging face transformers models
@@ -75,22 +43,21 @@ class CausalTracer(object):
         :param device: the new device
         """
         self.device = device
-
-        # update the model device
         self.model.to(device)
 
-    def trace(self, prompt: str, subject, verbose=False):
+    def trace(self, prompt: str, subject, samples=10, verbose=False):
         """
         Performs causal tracing using the specified prompt and subject
 
-        :param verbose: Print some info about the tracing process
         :param subject: The subject of the prompt
         :param prompt: The prompt
+        :param samples: The amount of samples for the tracing process
+        :param verbose: Print some info about the tracing process
         :returns: The tracing result
         """
 
         # create a batch for the forward pass
-        inputs = generate_inputs([prompt] * (10 + 1), self.tokenizer, self.device)
+        inputs = generate_inputs([prompt] * (samples + 1), self.tokenizer, self.device)
 
         # collect the original output of the model
         with torch.no_grad():
@@ -99,8 +66,10 @@ class CausalTracer(object):
         # decode the answer with the tokenizer
         [answer] = decode_tokens(self.tokenizer, [answer_token])
 
+        # the token range of the subject
         token_range = find_token_range(self.tokenizer, inputs["input_ids"][0], subject)
 
+        # calculate the lowest score possible by corrupting and patching no layer at all
         low_score = self._forward_pass(inputs, [], answer_token, token_range).item()
 
         # build the tracing score table
@@ -128,6 +97,8 @@ class CausalTracer(object):
 
         result = dict(
             scores=table,
+            best_score=base_score,
+            worst_score=low_score,
             input_ids=inputs["input_ids"][0],
             input_tokens=decode_tokens(self.tokenizer, inputs["input_ids"][0]),
             subject_range=token_range,
@@ -139,7 +110,8 @@ class CausalTracer(object):
 
         return result
 
-    def _forward_pass(self, inputs, patching_states: list, answer_token: int, token_range: tuple):
+    def _forward_pass(self, inputs, patching_states: list, answer_token: int, token_range: tuple,
+                      noise_coeff: float = 0.1):
         """
         Performs a single causal trace
 
@@ -154,12 +126,38 @@ class CausalTracer(object):
         for t, l in patching_states:
             patch_spec[l].append(t)
 
+        def _patching_rule(x: torch.Tensor, module):
+            """
+            Defines the patching rules for the different modules (layers) used in the tracing process
+
+            :param x: the previous hidden state of the knowledge flow, where h[0] is uncorrupted h[1] is corrupted
+            :param module: the current module
+            :returns: the patched hidden state
+            """
+
+            # define the patching rule for the word embedding in the wte layer
+            if isinstance(module, nn.Embedding):
+                start, end = token_range
+                # corrupt the tokens in the given range by adding random gaussian noise
+                x[1:, start:end] += noise_coeff * torch.randn(x.shape[0] - 1, end - start, x.shape[2]).to(self.device)
+                return x
+
+            if module not in patch_spec:
+                return x
+
+            h = x[0] if isinstance(x, tuple) else x
+            # restore the uncorrupted hidden state from the first forward pass
+            for token in patch_spec[module]:
+                h[1:, token] = h[0, token]
+            return x
+
         with torch.no_grad():
+
+            # build the patching layers dict
+            layers = {**dict([("wte", self.layers["transformer"]["wte"])]), **dict(patching_states)}
+
             # hook the model to later extract the hidden_states
-            hook_dict = TracingHookDict(model=self.model,
-                                        layers={**dict([("wte", self.layers["transformer"]["wte"])]),
-                                                **dict(patching_states)},
-                                        out_f=_patching_rule, out_f_params=(patch_spec, token_range, self.device))
+            hook_dict = TracingHookDict(model=self.model, layers=layers, out_f=_patching_rule)
 
             # forward pass
             out = self.model(**inputs)
