@@ -125,8 +125,8 @@ pip install pytorch torchvision tqdm matplotlib transformers seaborn
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-### Simple feature visualisation
-In order to perform feature visualisation on a convolutional model we are going to need to things: a image parameterization method and a objective.
+### Simple feature visualization
+In order to perform feature visualization on a convolutional model we are going to need two things: a image parameterization method and a objective.
 
 These are located in the `toumei.cnn` package.
 
@@ -138,7 +138,7 @@ import torchvision.transforms as T
 import toumei.cnns.objectives as obj
 import toumei.cnns.parameterization as param
 ```
-Next, we are going to import a model we can perform feature vizualization on
+Next, we are going to import a model we can perform feature visualization on
 ```python
 from toumei.models import Inception5h
 
@@ -155,7 +155,7 @@ transform = T.Compose([
     T.Lambda(lambda x: x*255 - 117)  # inception needs this
 ])
 ```
-We are now able to define our objective pipeline using a image parameterization method (here FFT) and our objective (visualise unit mixed3a:74)
+We are now able to define our objective pipeline using a image parameterization method (here FFT) and our objective (visualize unit mixed3a:74)
 
 ```python
 
@@ -252,7 +252,7 @@ Project Link: [https://github.com/LuanAdemi/toumei](https://github.com/LuanAdemi
 <!-- ACKNOWLEDGMENTS -->
 ## References
 
-* [the amazing distill article sequence about feature visualisation](https://distill.pub/2017/feature-visualization/)
+* [the amazing distill article sequence about feature visualization](https://distill.pub/2017/feature-visualization/)
 * [the rome paper](https://rome.baulab.info/)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
