@@ -1,4 +1,5 @@
 from collections import defaultdict
+
 from toumei.cnns.objectives.utils import freeze_model
 
 from tqdm import trange
@@ -38,14 +39,14 @@ class CausalTracer(object):
 
     def to(self, device):
         """
-        Sends the CausalTracer to the corresponding device
+        Sends the CausalTracer to the specified device
 
         :param device: the new device
         """
         self.device = device
         self.model.to(device)
 
-    def trace(self, prompt: str, subject, samples=10, verbose=False):
+    def trace(self, prompt: str, subject, samples=10, verbose=False) -> dict:
         """
         Performs causal tracing using the specified prompt and subject
 
@@ -111,7 +112,7 @@ class CausalTracer(object):
         return result
 
     def _forward_pass(self, inputs, patching_states: list, answer_token: int, token_range: tuple,
-                      noise_coeff: float = 0.1):
+                      noise_coeff: float = 0.1) -> torch.Tensor:
         """
         Performs a single causal trace
 
@@ -126,7 +127,7 @@ class CausalTracer(object):
         for t, l in patching_states:
             patch_spec[l].append(t)
 
-        def _patching_rule(x: torch.Tensor, module):
+        def _patching_rule(x: torch.Tensor, module) -> torch.Tensor:
             """
             Defines the patching rules for the different modules (layers) used in the tracing process
 

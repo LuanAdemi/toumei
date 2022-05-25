@@ -20,4 +20,3 @@ subject = "Karlsruhe Institute of Technology"
 # perform causal tracing
 tracer = CausalTracer(model, tokenizer)
 tracer.trace(prompt, subject, verbose=True)
-
