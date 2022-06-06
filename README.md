@@ -126,7 +126,7 @@ pip install pytorch torchvision tqdm matplotlib transformers seaborn
 ## Usage
 
 ### Simple feature visualization
-In order to perform feature visualization on a convolutional model we are going to need two things: a image parameterization method and a objective.
+In order to perform feature visualization on a convolutional model we are going to need two things: a image parameterization method and an objective.
 
 These are located in the `toumei.cnn` package.
 
@@ -201,7 +201,7 @@ tokenizer = AutoTokenizer.from_pretrained("gpt2-xl")
 
 model.to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
 ```
-After defining a prompt and specifying the subject of the prompt, we can create a CausalTracer object and trace the model using the prompt
+After defining a prompt and specifying the subject, we can create a CausalTracer object and trace the model using the prompt
 
 ```python
 # specify a prompt and it's subject for causal tracing
