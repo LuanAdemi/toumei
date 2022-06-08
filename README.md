@@ -253,9 +253,25 @@ Project Link: [https://github.com/LuanAdemi/toumei](https://github.com/LuanAdemi
 
 <!-- ACKNOWLEDGMENTS -->
 ## References
+The following section lists resources I recommend / used myself for building this project. 
 
-* [the amazing distill article sequence about feature visualization](https://distill.pub/2017/feature-visualization/)
-* [the rome paper](https://rome.baulab.info/)
+#### What is interpretability and why should I care?
+* [Interpretability in ML: A Broad Overview](https://www.lesswrong.com/posts/57fTWCpsAyjeAimTp/interpretability-in-ml-a-broad-overview-2)
+* [Transparancy and AGI safety](https://www.lesswrong.com/posts/QirLfXhDPYWCP8PK5/transparency-and-agi-safety)
+
+#### Feature Visualization and Circuit-based interpretability
+* [Feature Visualization](https://distill.pub/2017/feature-visualization/)
+* [Thread: Circuits](https://distill.pub/2020/circuits/)
+* [Repo: tensorflow/lucid](https://github.com/tensorflow/lucid)
+* [Repo: greentfrapp/lucent](https://github.com/greentfrapp/lucent)
+
+#### Unified Feature Attribution
+* [A Unified Approach to Interpreting Model Predictions](https://proceedings.neurips.cc/paper/2017/hash/8a20a8621978632d76c43dfd28b67767-Abstract.html)
+* [Visualizing the Impact of Feature Attribution Baselines](https://distill.pub/2020/attribution-baselines/)
+* [Repo: slundberg/shap](https://github.com/slundberg/shap)
+
+#### Rank-One model editing
+* [Locating and Editing Factual Associations in GPT](https://rome.baulab.info/)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
