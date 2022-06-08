@@ -63,20 +63,21 @@ Toumei is a little sideproject of mine, trying to combine state of the art inter
 I think interpretability methods became quite powerful and therefore useful in the last couple years, wanting me to provide a library for broader use of these methods.
 
 Following methods are currently implemented:
-- [Feature Visualization](https://distill.pub/2017/feature-visualization/)
+- [x] [Feature Visualization](https://distill.pub/2017/feature-visualization/) 
     - various image parameterization methods (Pixel, FFT, CPPN, etc.)
     - transformation robustness and total variance regularization
     - custom objective building
     - joint optimization
     - activation difference optimization (for e. g. styletransfer)
-- [Unified Feature Attribution](https://distill.pub/2020/attribution-baselines/) (see dev branch)
+- [x] [Causal Tracing and Rank-One model editing](https://rome.baulab.info/)
+    - causal tracing for huggingface like transformer objects
+    - *rank-one model editing is currently WIP*
+- [ ] [Unified Feature Attribution](https://distill.pub/2020/attribution-baselines/) (see dev branch)
     - LIME (WIP)
     - DeepLift (Planned)
     - SHAP methods (Planned)
     - Circuit detection (Research)
-- [Causal Tracing and Rank-One model editing](https://rome.baulab.info/) (WIP)
-    - causal tracing for huggingface like transformer objects
-    - *rank-one model editing is currently WIP*
+
 
 **I am planning to add new things as I learn about them in the future.**
 
@@ -86,14 +87,10 @@ Following methods are currently implemented:
 
 ### Built With
 
-* [PyTorch](https://pytorch.org/)
-* [Seaborn](https://seaborn.pydata.org/)
-* [tqdm](https://tqdm.github.io/)
-* [transformers](https://huggingface.co/)
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
+![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PYTORCH&logoColor=white)
+![Seaborn](https://img.shields.io/badge/Seaborn-%230C55A5.svg?style=for-the-badge&logo=Seaborn&logoColor=white)
+![tqdm](https://img.shields.io/badge/tqdm-%23150458.svg?style=for-the-badge&logo=tqdm&logoColor=white)
+![Huggingface](https://img.shields.io/badge/HUggingface-%23013243.svg?style=for-the-badge&logo=Huggingface&logoColor=white)
 
 <!-- GETTING STARTED -->
 ## Getting Started
