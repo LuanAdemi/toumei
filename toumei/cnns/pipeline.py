@@ -3,11 +3,11 @@ import torch.nn as nn
 
 from toumei.cnns.objectives.utils import freeze_model, unfreeze_model
 from toumei.cnns.objectives.atoms import Atom
-from toumei.cnns.objectives.objective import Objective
+from toumei.general.feature_visualization_method import FeatureVisualizationMethod
 from toumei.cnns.parameterization import ImageGenerator
 
 
-class Pipeline(Objective):
+class Pipeline(FeatureVisualizationMethod):
     """
     This is a wrapper class for objective generation in a pipeline based work-flow.
     It takes a generator and a tree like objective function definition consisting of modules, which is executed

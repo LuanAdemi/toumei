@@ -4,6 +4,7 @@ import torch.nn as nn
 import torchvision.transforms as T
 import tqdm
 
+import toumei
 import toumei.cnns.objectives as obj
 import toumei.cnns.parameterization as param
 
@@ -160,7 +161,7 @@ class ActivationDifference(obj.Atom):
         return self.attached_model
 
 
-class StyleTransfer(obj.Objective):
+class StyleTransfer(toumei.general.FeatureVisualizationMethod):
     """
     A custom objective for style transfer using InceptionV1
     """

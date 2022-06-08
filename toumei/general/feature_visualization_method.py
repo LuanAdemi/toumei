@@ -3,15 +3,16 @@ import torch.nn as nn
 import tqdm
 from toumei.cnns.objectives.tv_loss import TVLoss
 from toumei.cnns.parameterization import ImageGenerator
+from toumei.general.objective import Objective
 
 
-class Objective(object):
+class FeatureVisualizationMethod(Objective):
     """
     The base class for the feature visualization objectives
     It handles the optimization process and provides a simple interface for analyzing the results
     """
     def __init__(self):
-        super(Objective, self).__init__()
+        super(FeatureVisualizationMethod, self).__init__()
         self.model = None
         self.children = []
         self.optimized = False
