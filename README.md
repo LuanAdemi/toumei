@@ -54,7 +54,7 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-> This is in active development so the README might be outdated and is not listing all things currently implemented. See the dev branch for more information.
+> This is in active development so the README might be outdated and is not listing all things currently implemented. *See the dev branch for more information.*
 
 <img src="https://raw.githubusercontent.com/LuanAdemi/toumei/master/assets/feature_overview.png">
 
@@ -63,18 +63,18 @@ Toumei is a little sideproject of mine, trying to combine state of the art inter
 I think interpretability methods became quite powerful and therefore useful in the last couple years, wanting me to provide a library for broader use of these methods.
 
 Following methods are currently implemented:
-- [Feature Visualization for CNN interpretability](https://distill.pub/2017/feature-visualization/)
+- [Feature Visualization](https://distill.pub/2017/feature-visualization/)
     - various image parameterization methods (Pixel, FFT, CPPN, etc.)
     - transformation robustness and total variance regularization
     - custom objective building
     - joint optimization
     - activation difference optimization (for e. g. styletransfer)
-- [Unified Feature Attribution Methods](https://distill.pub/2020/attribution-baselines/) (see dev branch)
+- [Unified Feature Attribution](https://distill.pub/2020/attribution-baselines/) (see dev branch)
     - LIME (WIP)
     - DeepLift (Planned)
     - SHAP methods (Planned)
     - Circuit detection (Research)
-- [Causal Tracing and Rank-One model editing for transformer interpretability](https://rome.baulab.info/) (WIP)
+- [Causal Tracing and Rank-One model editing](https://rome.baulab.info/) (WIP)
     - causal tracing for huggingface like transformer objects
     - *rank-one model editing is currently WIP*
 
