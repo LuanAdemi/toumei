@@ -1,11 +1,16 @@
+import numpy as np
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from toumei.transformers.rome.tracing import CausalTracer
+from toumei.cnns.objectives.utils import set_seed
 
 """
 Locating factual knowledge in GPT like models using causal tracing
 """
+
+# seed for reproducibility
+set_seed(42)
 
 # load gpt2 from huggingface
 model = AutoModelForCausalLM.from_pretrained("gpt2-xl", torch_dtype=torch.float16)
@@ -19,4 +24,4 @@ subject = "The light bulb"
 
 # perform causal tracing
 tracer = CausalTracer(model, tokenizer)
-tracer.trace(prompt, subject, verbose=True)
+results = tracer.trace(prompt, subject, verbose=True)

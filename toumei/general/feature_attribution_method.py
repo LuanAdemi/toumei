@@ -6,5 +6,3 @@ class FeatureAttributionMethod(Objective):
     def __init__(self):
         super(FeatureAttributionMethod, self).__init__()
         self.explanation_model = LinearExplanationModel()
-
-

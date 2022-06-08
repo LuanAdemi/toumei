@@ -4,8 +4,7 @@ import torch.nn as nn
 
 class Objective(object):
     """
-    The base class for the feature visualization objectives
-    It handles the optimization process and provides a simple interface for analyzing the results
+    The base class for a interpretability method
     """
     def __init__(self):
         super(Objective, self).__init__()
