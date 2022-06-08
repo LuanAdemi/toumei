@@ -2,6 +2,33 @@ import torch
 import torch.nn as nn
 
 
+class MappingFunction(object):
+    """
+    A function that maps 'interpretable inputs' to the original input vectors
+    """
+    def __init__(self):
+        super(MappingFunction, self).__init__()
+
+    def __call__(self, x):
+        return self.forward(x)
+
+    def forward(self, x: torch.Tensor):
+        return NotImplementedError
+
+
+class PatchingMapper(MappingFunction):
+    """
+    A simple patching mapper, which maps a binary vector z to the original output vector,
+    where 1 means the feature is present and 0 means it's not
+    """
+    def __init__(self, original_input):
+        super(PatchingMapper, self).__init__()
+        self.original_input = original_input
+
+    def forward(self, x: torch.Tensor):
+        return self.original_input[x]
+
+
 class LinearExplanationModel(nn.Module):
     def __init__(self, size=10):
         super(LinearExplanationModel, self).__init__()
