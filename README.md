@@ -62,26 +62,31 @@ Toumei is a little sideproject of mine, trying to combine state of the art inter
 
 I think interpretability methods became quite powerful and therefore useful in the last couple years, wanting me to provide a library for broader use of these methods.
 
-Following methods are currently implemented:
-- [x] [Feature Visualization](https://distill.pub/2017/feature-visualization/) 
-    - various image parameterization methods (Pixel, FFT, CPPN, etc.)
-    - transformation robustness and total variance regularization
-    - custom objective building
-    - joint optimization
-    - activation difference optimization (for e. g. styletransfer)
-- [x] [Causal Tracing and Rank-One model editing](https://rome.baulab.info/)
-    - causal tracing for huggingface like transformer objects
-    - *rank-one model editing is currently WIP*
-- [ ] [Unified Feature Attribution](https://distill.pub/2020/attribution-baselines/) (see dev branch)
-    - LIME (WIP)
-    - DeepLift (Planned)
-    - SHAP methods (Planned)
-    - Circuit detection (Research)
+<img align="right" width="400px" src="https://i.imgur.com/ShsShfI.png" alt="">
+  
+Following methods are currently or will be implemented:
+<br><br>
+- [x] [Feature Visualization](https://distill.pub/2017/feature-visualization/) **(1)**
+    - [x] various image parameterization methods (Pixel, FFT, CPPN, etc.)
+    - [x] transformation robustness and total variance regularization
+    - [x] custom objective building
+    - [x] joint optimization
+    - [x] activation difference optimization (for e. g. styletransfer)
+- [x] [Causal Tracing and Rank-One model editing](https://rome.baulab.info/) **(1)**
+    - [x] causal tracing for huggingface like transformer objects
+    - [ ] rank-one model editing (WIP)
+- [ ] [Unified Feature Attribution](https://distill.pub/2020/attribution-baselines/) **(1)**
+    - [ ] LIME (WIP)
+    - [ ] DeepLift (planned)
+    - [ ] SHAP methods (planned)
+    - [ ] Circuit detection using feature atribution (research idea)
+- [ ] [Modularity](https://www.lesswrong.com/tag/modularity/) **(1 & 4)**
+    - [ ] [Measuring Modularity](https://arxiv.org/pdf/2110.08058.pdf) (planned)
+    - [ ] [Investigate (randomly) modulary varying goals in modern deep learning architectures](https://www.lesswrong.com/posts/99WtcMpsRqZcrocCd/ten-experiments-in-modularity-which-we-d-like-you-to-run) (research project)
 
 
-**I am planning to add new things as I learn about them in the future.**
+**I am planning to add new things as I learn about them in the future, so this project basically mirrors my progress in the field of AI Interpretability.**
 
-<p align="right">(<a href="#top">back to top</a>)</p>
 
 
 
@@ -258,6 +263,7 @@ The following section lists resources I recommend / used myself for building thi
 #### What is interpretability and why should I care?
 * [Interpretability in ML: A Broad Overview](https://www.lesswrong.com/posts/57fTWCpsAyjeAimTp/interpretability-in-ml-a-broad-overview-2)
 * [Transparancy and AGI safety](https://www.lesswrong.com/posts/QirLfXhDPYWCP8PK5/transparency-and-agi-safety)
+* [A transparency and interpretability tech tree](https://www.lesswrong.com/posts/nbq2bWLcYmSGup9aF/a-transparency-and-interpretability-tech-tree)
 
 #### Feature Visualization and Circuit-based interpretability
 * [Feature Visualization](https://distill.pub/2017/feature-visualization/)
@@ -273,9 +279,12 @@ The following section lists resources I recommend / used myself for building thi
 #### Rank-One model editing
 * [Locating and Editing Factual Associations in GPT](https://rome.baulab.info/)
 
+
+#### Modularity
+* [Project Intro: Selection Theorems for Modularity](https://www.lesswrong.com/posts/XKwKJCXgSKhSr9bZY/project-intro-selection-theorems-for-modularity)
+* [Quantifying local specialization in Deep Neural Networks](https://arxiv.org/pdf/2110.08058.pdf)
+
 <p align="right">(<a href="#top">back to top</a>)</p>
-
-
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
