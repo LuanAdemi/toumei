@@ -81,7 +81,7 @@ Following methods are currently or will be implemented:
     - [ ] SHAP methods (planned)
     - [ ] Circuit detection using feature atribution (research idea)
 - [ ] [Modularity](https://www.lesswrong.com/tag/modularity/) **(1 & 4)**
-    - [ ] [Measuring Modularity](https://arxiv.org/pdf/2110.08058.pdf) (planned)
+    - [ ] [Measuring Modularity](https://arxiv.org/pdf/2110.08058.pdf) (WIP)
     - [ ] [Investigate (randomly) modulary varying goals in modern deep learning architectures](https://www.lesswrong.com/posts/99WtcMpsRqZcrocCd/ten-experiments-in-modularity-which-we-d-like-you-to-run) (research project)
 
 
