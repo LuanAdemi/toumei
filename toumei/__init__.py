@@ -2,5 +2,7 @@ __all__ = [
     'cnns',
     'probe',
     'models',
-    "misc"
+    "misc",
+    "transformers",
+    'general'
 ]

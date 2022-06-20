@@ -3,22 +3,17 @@ import torch.nn as nn
 import tqdm
 from toumei.cnns.objectives.tv_loss import TVLoss
 from toumei.cnns.parameterization import ImageGenerator
+from toumei.general.objective import Objective
 
 
-class Objective(object):
+class FeatureVisualizationMethod(Objective):
     """
     The base class for the feature visualization objectives
     It handles the optimization process and provides a simple interface for analyzing the results
     """
-    def __init__(self):
-        super(Objective, self).__init__()
-        self.model = None
-        self.children = []
-        self.optimized = False
-        self.device = torch.device("cpu")
 
     def __str__(self) -> str:
-        return f"Objective({self.model.__class__.__name__})"
+        return f"FeatureVisualizationMethod({self.model.__class__.__name__})"
 
     def attach(self, model: nn.Module):
         """
@@ -34,15 +29,6 @@ class Objective(object):
 
         return NotImplementedError
 
-    def summary(self):
-        """
-        Prints an overview of the current objective
-        """
-        print(f"Objective(")
-        print(f"    Generator:  {self.generator}")
-        print(f"    Criterion:  ")
-        print(")")
-
     def optimize(self, epochs=512, optimizer=torch.optim.Adam, lr=5e-3, tv_loss=False, verbose=True):
         """
         Optimize the current objective
@@ -56,9 +42,6 @@ class Objective(object):
         self.model.to(self.device)
         self.model.eval()
         self.generator.to(self.device)
-
-        # set the objective to optimized
-        self.optimized = True
 
         # attach the optimizer to the parameters of the current generator
         opt = optimizer(self.generator.parameters, lr)
@@ -88,13 +71,6 @@ class Objective(object):
 
                     t.set_postfix(loss=loss.item())
                 opt.step(step())
-
-    def to(self, device: torch.device):
-        """
-        Sets the device for the optimization process
-        :param device: the device
-        """
-        self.device = device
 
     def forward(self) -> torch.Tensor:
         """

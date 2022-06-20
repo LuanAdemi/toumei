@@ -10,7 +10,7 @@ class ActivationMap(object):
     This class generates an activation map for the specified unit using the given optimized(!) objective.
     An activation map gives an insight on the (spatial) contribution of a feature in other units.
     """
-    def __init__(self, objective: obj.Objective, unit: obj.Atom, shape: tuple):
+    def __init__(self, objective: obj.FeatureVisualizationMethod, unit: obj.Atom, shape: tuple):
         """
         Initializes a new activation map object
         :param objective: the optimized objective

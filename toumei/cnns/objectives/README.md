@@ -1,4 +1,4 @@
-## Objectives (WIP)
+## Objectives
 
 This subpackage contains the base objectives and operations for generating complex feature visualization pipelines.
 Toumei currently supports
