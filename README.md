@@ -314,7 +314,7 @@ The following section lists resources I recommend / used myself for building thi
 
 #### Rank-One model editing
 * [Locating and Editing Factual Associations in GPT](https://rome.baulab.info/)
-
+* [Repo: kmeng01/rome](https://github.com/kmeng01/rome)
 
 #### Modularity
 * [Project Intro: Selection Theorems for Modularity](https://www.lesswrong.com/posts/XKwKJCXgSKhSr9bZY/project-intro-selection-theorems-for-modularity)
