@@ -8,5 +8,6 @@ __all__ = [
     "CPPN",
     "Discriminator",
     "Generator",
-    "Inception5h"
+    "Inception5h",
+    "SimpleMLP"
 ]
