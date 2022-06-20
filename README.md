@@ -94,10 +94,12 @@ Following methods are currently or will be implemented:
 ### Built With
 
 ![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PYTORCH&logoColor=white)
-![tqdm](https://img.shields.io/badge/tqdm-%23150458.svg?style=for-the-badge&logo=tqdm&logoColor=white)
-![Seaborn](https://img.shields.io/badge/Seaborn-%230C55A5.svg?style=for-the-badge&logo=Seaborn&logoColor=white)
-![Huggingface](https://img.shields.io/badge/Huggingface-%23013243.svg?style=for-the-badge&logo=Huggingface&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-%23F7931E.svg?style=for-the-badge&logo=scikit-learn&logoColor=white)
 ![NetworkX](https://img.shields.io/badge/NetworkX-008DE4.svg?style=for-the-badge&logo=NetworkX&logoColor=white)
+![Seaborn](https://img.shields.io/badge/Seaborn-%230C55A5.svg?style=for-the-badge&logo=Seaborn&logoColor=white)
+![tqdm](https://img.shields.io/badge/tqdm-%23150458.svg?style=for-the-badge&logo=tqdm&logoColor=white)
+![NumPy](https://img.shields.io/badge/numpy-%23013243.svg?style=for-the-badge&logo=numpy&logoColor=white)
+![Huggingface](https://img.shields.io/badge/Huggingface-%233F4F75.svg?style=for-the-badge&logo=Huggingface&logoColor=white)
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -108,7 +110,7 @@ Toumei **can not** be installed using `pip`. To use toumei by running the experi
 
 Make sure the following libraries are installed or install them using 
 ```sh
-pip install pytorch torchvision tqdm matplotlib transformers seaborn
+pip install pytorch torchvision tqdm matplotlib transformers seaborn scikit-learn networkx
 ```
 
 ### Installation
