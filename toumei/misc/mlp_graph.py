@@ -2,6 +2,8 @@ import networkx as nx
 import torch.nn as nn
 import itertools
 
+from sklearn.cluster import SpectralClustering
+
 
 def peek(it):
     """
@@ -84,11 +86,32 @@ class MLPGraph(nx.Graph):
 
         The values range from [-1, 2.1].
 
+        TODO: Use spectral clustering here
+
         :return: the model modularity
         """
+
+        self.spectral_clustering()
+
         # greedily find the best graph partition (community) by maximizing modularity
         best_partition = nx.algorithms.community.greedy_modularity_communities(self)
 
         # calculate the modularity for the given partition
         return nx.algorithms.community.modularity(self, best_partition)
 
+    def spectral_clustering(self, n_clusters=8):
+        """
+        Performs network-wide spectral clustering.
+
+        :return: the cluster labels
+        """
+
+        adj_matrix = nx.to_numpy_matrix(self)
+        node_list = list(self.nodes())
+
+        '''Spectral Clustering'''
+        clusters = SpectralClustering(affinity='precomputed', assign_labels="discretize", random_state=0,
+                                      n_clusters=n_clusters).fit_predict(adj_matrix)
+
+        print(clusters)
+        return clusters
