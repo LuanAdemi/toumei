@@ -50,19 +50,24 @@ class ModelGraph(nx.Graph):
         """
         Performs network-wide spectral clustering.
 
-        TODO: Convert the simple cluster labels to a networkx node list
-
         :return: the cluster labels
         """
 
         adj_matrix = nx.to_numpy_matrix(self)
         node_list = list(self.nodes())
 
-        '''Spectral Clustering'''
         clusters = SpectralClustering(affinity='precomputed', assign_labels="discretize", random_state=0,
                                       n_clusters=n_clusters).fit_predict(adj_matrix)
 
-        return clusters
+        communities = [set() for _ in range(n_clusters)]
+
+        for i, node in enumerate(node_list):
+            label = clusters[i]
+            communities[label].add(node)
+
+        communities = [frozenset(i) for i in communities]
+
+        return communities
 
     def get_model_modularity(self):
         """
@@ -70,16 +75,11 @@ class ModelGraph(nx.Graph):
 
         The values range from [-1, 2.1].
 
-        TODO: Use spectral clustering here, as seen in the original paper
-
         :return: the model modularity
         """
 
         # perform spectral clustering for partitioning the graph
-        self._spectral_clustering()
-
-        # OBSOLETE: greedily find the best graph partition (community) by maximizing modularity
-        best_partition = nx.algorithms.community.greedy_modularity_communities(self)
+        spectral_partition = self._spectral_clustering()
 
         # calculate the modularity for the given partition
-        return nx.algorithms.community.modularity(self, best_partition)
+        return nx.algorithms.community.modularity(self, spectral_partition)
