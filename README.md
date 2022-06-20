@@ -7,10 +7,10 @@
     <img src="assets/header.png" alt="Logo">
   </a>
 
-<h3 align="center">Toumei (透明)</h3>
+<h3 align="center">toumei (透明)</h3>
 
   <p align="center">
-    A interpretability library for pytorch
+    An interpretability library for pytorch
     <br />
     <a href="https://github.com/LuanAdemi/toumei"><strong>Explore the docs »</strong></a>
     <br />
@@ -58,7 +58,7 @@
 
 <img src="https://raw.githubusercontent.com/LuanAdemi/toumei/master/assets/feature_overview.png">
 
-Toumei is a little sideproject of mine, trying to combine state of the art interpretability and model editing methods into a pythonic library. The goal is to compile useful methods into a coherent toolchain and make complexe methods accessible using a intuitive syntax. 
+*toumei* is a little sideproject of mine, trying to combine state of the art interpretability and model editing methods into a pythonic library. The goal is to compile useful methods into a coherent toolchain and make complexe methods accessible using a intuitive syntax. 
 
 I think interpretability methods became quite powerful and therefore useful in the last couple years, wanting me to provide a library for broader use of these methods.
 
@@ -81,14 +81,12 @@ Following methods are currently or will be implemented:
     - [ ] SHAP methods (planned)
     - [ ] Circuit detection using feature atribution (research idea)
 - [x] [Modularity](https://www.lesswrong.com/tag/modularity/) **(1 & 4)**
-    - [x] [Measuring Modularity of MLPs](https://arxiv.org/pdf/2110.08058.pdf)
-    - [x] [Measuring Modularity of CNNs](https://arxiv.org/pdf/2110.08058.pdf)
+    - [x] Measuring Modularity of MLPs
+    - [x] Measuring Modularity of CNNs
     - [ ] [Investigate (randomly) modulary varying goals in modern deep learning architectures](https://www.lesswrong.com/posts/99WtcMpsRqZcrocCd/ten-experiments-in-modularity-which-we-d-like-you-to-run) (research project)
 
 
 **I am planning to add new things as I learn about them in the future, so this project basically mirrors my progress in the field of AI Interpretability.**
-
-
 
 
 ### Built With
@@ -104,7 +102,7 @@ Following methods are currently or will be implemented:
 <!-- GETTING STARTED -->
 ## Getting Started
 
-Toumei **can not** be installed using `pip`. To use toumei by running the experiments or adding it to your projects, please follow the guide below.
+*toumei* **can not** be installed using `pip`. To use toumei by running the experiments or adding it to your projects, please follow the guide below.
 
 ### Prerequisites
 
@@ -197,7 +195,7 @@ fv.plot()
 ```
 
 ### Causal Tracing
-If we want to locate factual knowledge in GPT like models, we can use causal tracing. Toumei implements this in the `toumei.transformers.rome` package.
+If we want to locate factual knowledge in GPT like models, we can use causal tracing. *toumei* implements this in the `toumei.transformers.rome` package.
 ```python
 from toumei.transformers.rome.tracing import CausalTracer
 ```
@@ -224,6 +222,40 @@ tracer = CausalTracer(model, tokenizer)
 tracer.trace(prompt, subject, verbose=True)
 ```
 
+### Measuring Model Modularity
+*toumei* implements the <a href="https://arxiv.org/pdf/2110.08058.pdf">modularity metric derived from graph theory</a> for common deep learning architectures such as MLPs and CNNs.
+
+We start by converting our model to an actual graph, we can perform graph algorithms on. *toumei* provides different wrappers for every architecture, which can be imported from the `misc` package
+
+```python
+from toumei.misc import MLPGraph, CNNGraph
+```
+Next we import and initialize some models, of which we want to measure the modularity of.
+
+```python
+from toumei.models import SimpleMLP, SimpleCNN
+
+# create the models
+mlp = SimpleMLP(4, 4)
+cnn = SimpleCNN(1, 10)
+```
+Wrapping these models with the imported classes builds the corresponding weighted graph of the model
+
+```python
+# create graph from the model
+mlp_graph = MLPGraph(mlp)
+cnn_graph = CNNGraph(cnn)
+```
+
+This wrapper allows us to perform all sorts of graph algorithms on it. We can get the modularity of the graph by performing spectral clustering on it to partition the graph in $n$ communities we can use to calculate the <a href="https://en.wikipedia.org/wiki/Modularity_(networks)">graph modularity</a>.
+
+This is all done internally by calling 
+```python
+# calculate the modularity
+print(mlp_graph.get_model_modularity())
+print(cnn_graph.get_model_modularity())
+```
+### Other
 *See the <a href="https://github.com/LuanAdemi/toumei/tree/master/experiments">experiments folder</a> for more examples*
 
 <p align="right">(<a href="#top">back to top</a>)</p>
