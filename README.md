@@ -265,8 +265,8 @@ print(cnn_graph.get_model_modularity())
 <!-- CONTRIBUTING -->
 ## Contributing
 
-You are more than welcome to contribute to this project or propose new interpretability methods I can add to this project.
-Just open an issue, like you would do on any other github repo.
+You are more than welcome to contribute to this project or propose new interpretability methods I can add.
+Just open an issue or pull request, like you would do on any other github repo.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
