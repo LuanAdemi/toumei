@@ -94,9 +94,10 @@ Following methods are currently or will be implemented:
 ### Built With
 
 ![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PYTORCH&logoColor=white)
-![Seaborn](https://img.shields.io/badge/Seaborn-%230C55A5.svg?style=for-the-badge&logo=Seaborn&logoColor=white)
 ![tqdm](https://img.shields.io/badge/tqdm-%23150458.svg?style=for-the-badge&logo=tqdm&logoColor=white)
-![Huggingface](https://img.shields.io/badge/HUggingface-%23013243.svg?style=for-the-badge&logo=Huggingface&logoColor=white)
+![Seaborn](https://img.shields.io/badge/Seaborn-%230C55A5.svg?style=for-the-badge&logo=Seaborn&logoColor=white)
+![Huggingface](https://img.shields.io/badge/Huggingface-%23013243.svg?style=for-the-badge&logo=Huggingface&logoColor=white)
+![NetworkX](https://img.shields.io/badge/NetworkX-008DE4.svg?style=for-the-badge&logo=NetworkX&logoColor=white)
 
 <!-- GETTING STARTED -->
 ## Getting Started
