@@ -3,10 +3,12 @@ from toumei.models.discriminator import Discriminator
 from toumei.models.cppn import CPPN
 from toumei.models.inception5h import Inception5h
 from toumei.models.simple_mlp import SimpleMLP
+from toumei.models.simple_cnn import SimpleCNN
 
 __all__ = [
     "CPPN",
     "Discriminator",
     "Generator",
-    "Inception5h"
+    "Inception5h",
+    "SimpleMLP"
 ]
