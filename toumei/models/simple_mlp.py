@@ -14,10 +14,10 @@ class SimpleMLP(nn.Module):
         self.fc3 = nn.Linear(inp//2, inp//4)
         self.relu3 = nn.ReLU()
 
-        self.fc4 = nn.Linear(inp//4, out * 10)
+        self.fc4 = nn.Linear(inp//4, out * 20)
         self.relu4 = nn.ReLU()
 
-        self.fc5 = nn.Linear(out * 10, out)
+        self.fc5 = nn.Linear(out * 20, out)
         self.relu5 = nn.ReLU()
 
     def forward(self, x):
