@@ -1,22 +1,29 @@
 import torch.nn as nn
 
 
+def add_layers(model, dimensions):
+    layers = []
+    for i, (dimension) in enumerate(dimensions):
+        fc = nn.Linear(dimension, dimensions[i + 1])
+        setattr(model, f"fc{i}", fc)
+        layers.append(fc)
+        if len(dimensions) == i + 2:
+            break
+
+    return layers
+
+
 class SimpleMLP(nn.Module):
     layers = []
 
     def __init__(self, *dimensions):
         super(SimpleMLP, self).__init__()
 
-        for i, (dimension) in enumerate(dimensions):
-            fc = nn.Linear(dimension, dimensions[i+1])
-            setattr(self, f"fc{i}", fc)
-            self.layers.append(fc)
-            if len(dimensions) == i+2:
-                break
+        self.layers = add_layers(self, dimensions)
 
         self.relu = nn.ReLU()
 
     def forward(self, x):
         for layer in self.layers:
             x = self.relu(layer(x))
-        return
+        return x
