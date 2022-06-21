@@ -42,16 +42,18 @@ class CNNGraph(ModelGraph):
 
         iterator = iter(weights.items())
 
+        current_layer = 0
+
         while True:
-            # get the current named parameter weight
-            key, value = next(iterator)
             try:
-                (next_key, next_value), iterator = peek(iterator)
+                # get the current named parameter weight
+                key, value = next(iterator)
+                current_layer += 1
                 for current_channel in range(value.shape[1]):
-                    current_node = key.split(".")[0] + ":" + str(current_channel)
+                    current_node = f"layer{current_layer}:{current_channel}"
                     # iterate over every sub node
                     for next_channel in range(value.shape[0]):
-                        next_node = next_key.split(".")[0] + ":" + str(next_channel)
+                        next_node = f"layer{current_layer + 1}:{next_channel}"
 
                         super().add_edge(current_node, next_node,
                                          weight=torch.linalg.matrix_norm(
