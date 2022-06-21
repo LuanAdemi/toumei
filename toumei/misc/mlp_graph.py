@@ -1,8 +1,4 @@
-import networkx as nx
-import torch.nn as nn
 import itertools
-
-from sklearn.cluster import SpectralClustering
 
 from toumei.misc.model_graph import ModelGraph
 
@@ -51,7 +47,7 @@ class MLPGraph(ModelGraph):
                 (next_key, next_value), iterator = peek(iterator)
                 for current_neuron in range(value.shape[1]):
                     current_node = key.split(".")[0] + ":" + str(current_neuron)
-                    # iterate over evey sub node
+                    # iterate over every sub node
                     for next_neuron in range(value.shape[0]):
                         next_node = next_key.split(".")[0] + ":" + str(next_neuron)
 
