@@ -46,7 +46,7 @@ class ModelGraph(nx.Graph):
         """
         return NotImplementedError
 
-    def _spectral_clustering(self, n_clusters=8):
+    def _spectral_clustering(self, n_clusters=32):
         """
         Performs network-wide spectral clustering.
 
@@ -56,7 +56,8 @@ class ModelGraph(nx.Graph):
         adj_matrix = nx.to_numpy_matrix(self)
         node_list = list(self.nodes())
 
-        clusters = SpectralClustering(affinity='precomputed', assign_labels="discretize", random_state=0,
+        clusters = SpectralClustering(eigen_solver='arpack', n_init=100, affinity='precomputed', assign_labels="kmeans",
+                                      random_state=0,
                                       n_clusters=n_clusters).fit_predict(adj_matrix)
 
         communities = [set() for _ in range(n_clusters)]
