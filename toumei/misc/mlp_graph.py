@@ -54,7 +54,9 @@ class MLPGraph(ModelGraph):
 
                         # add an edge between the two nodes using the absolute value of the parameter weight as the
                         # edge weight
+                        self.add_node(current_node, layer=current_layer)
+                        self.add_node(next_node, layer=current_layer + 1)
                         self.add_edge(current_node, next_node,
-                                       weight=value[next_neuron, current_neuron].detach().abs().item())
+                                        weight=value[next_neuron, current_neuron].detach().abs().item())
             except StopIteration:
                 break

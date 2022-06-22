@@ -12,16 +12,16 @@ class PatchedModel(nn.Module):
         self.patched_m = SimpleMLP(2 * 28 * 28, 28 * 28, 20)
 
         m_1 = SimpleMLP(28 * 28, (28 * 28) // 2, 10)
-        m_1.load_state_dict(torch.load("mnist_model.pth"))
+        m_1.load_state_dict(torch.load("models/mnist_model.pth"))
         m_2 = SimpleMLP(28 * 28, (28 * 28) // 2, 10)
-        m_2.load_state_dict(torch.load("mnist_model.pth"))
+        m_2.load_state_dict(torch.load("models/mnist_model.pth"))
 
         self.patch_model(m_1, m_2)
 
         self.linear_layer = nn.Linear(20, 20)
 
         self.mlp = SimpleMLP(20, 4, 1)
-        self.mlp.load_state_dict(torch.load("addition_model.pth"))
+        self.mlp.load_state_dict(torch.load("models/addition_model.pth"))
 
         freeze_model(self.mlp)
 

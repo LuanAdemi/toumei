@@ -57,7 +57,6 @@ class ModelGraph(nx.Graph):
         node_list = list(self.nodes())
 
         clusters = SpectralClustering(eigen_solver='arpack', n_init=100, affinity='precomputed', assign_labels="kmeans",
-                                      random_state=0,
                                       n_clusters=n_clusters).fit_predict(adj_matrix)
 
         communities = [set() for _ in range(n_clusters)]
@@ -68,9 +67,9 @@ class ModelGraph(nx.Graph):
 
         communities = [frozenset(i) for i in communities]
 
-        return communities
+        return communities, clusters
 
-    def get_model_modularity(self):
+    def get_model_modularity(self, n_clusters=8):
         """
         Calculate the best-case modularity of the model by calculating the graph modularity
 
@@ -80,7 +79,7 @@ class ModelGraph(nx.Graph):
         """
 
         # perform spectral clustering for partitioning the graph
-        spectral_partition = self._spectral_clustering()
+        spectral_partition, clusters = self._spectral_clustering(n_clusters)
 
         # calculate the modularity for the given partition
-        return nx.algorithms.community.modularity(self, spectral_partition)
+        return nx.algorithms.community.modularity(self, spectral_partition, resolution=.5)
