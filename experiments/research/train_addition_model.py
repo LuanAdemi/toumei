@@ -49,4 +49,4 @@ for e in range(epochs):
 graph = MLPGraph(model)
 print(graph.get_model_modularity())
 
-torch.save(model.state_dict(), "addition_model.pth")
+torch.save(model.state_dict(), "models/addition_model.pth")
