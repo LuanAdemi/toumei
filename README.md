@@ -81,9 +81,14 @@ Following methods are currently or will be implemented:
     - [ ] SHAP methods (planned)
     - [ ] Circuit detection using feature atribution (research idea)
 - [x] [Model Modularity](https://www.lesswrong.com/tag/modularity/) **(1 & 4)**
-    - [x] Measuring Modularity of MLPs
-    - [x] Measuring Modularity of CNNs
+    - [x] [Spectral Clustering](https://en.wikipedia.org/wiki/Spectral_clustering) for model graphs
+    - [x] Implement the [network modularity metric](https://en.wikipedia.org/wiki/Modularity_(networks))
+    - [x] Measuring modularity of MLPs
+    - [x] Measuring modularity of CNNs
     - [ ] [Investigate (randomly) modulary varying goals in modern deep learning architectures](https://www.lesswrong.com/posts/99WtcMpsRqZcrocCd/ten-experiments-in-modularity-which-we-d-like-you-to-run) (research project)
+      - Engineering a baseline model with high modularity
+      - Comparing the baseline model against other models using the modularity metric
+      - Measure the impact of modulary varying goals on model modularity
 
 
 **I am planning to add new things as I learn about them in the future, so this project basically mirrors my progress in the field of AI Interpretability.**
