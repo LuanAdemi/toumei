@@ -10,8 +10,6 @@ A script showcasing the modularity measurement of a simple MLP
 using the pipeline introduced in https://arxiv.org/pdf/2110.08058.pdf
 """
 
-
-
 # create the models
 mlp = SimpleMLP(4, 4)
 cnn = SimpleCNN(1, 10)

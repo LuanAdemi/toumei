@@ -39,21 +39,24 @@ class MLPGraph(ModelGraph):
         # an iterator for iterating over the named parameters
         iterator = iter(weights.items())
 
+        current_layer = 0
+
         while True:
-            # get the current named parameter weight
-            key, value = next(iterator)
             try:
-                # peek at the next named parameter
-                (next_key, next_value), iterator = peek(iterator)
+                # get the current named parameter weight
+                key, value = next(iterator)
+                current_layer += 1
                 for current_neuron in range(value.shape[1]):
-                    current_node = key.split(".")[0] + ":" + str(current_neuron)
+                    current_node = f"layer{current_layer}:{current_neuron}"
                     # iterate over every sub node
                     for next_neuron in range(value.shape[0]):
-                        next_node = next_key.split(".")[0] + ":" + str(next_neuron)
+                        next_node = f"layer{current_layer + 1}:{next_neuron}"
 
                         # add an edge between the two nodes using the absolute value of the parameter weight as the
                         # edge weight
-                        super().add_edge(current_node, next_node,
-                                       weight=value[next_neuron, current_neuron].detach().abs().item())
+                        self.add_node(current_node, layer=current_layer)
+                        self.add_node(next_node, layer=current_layer + 1)
+                        self.add_edge(current_node, next_node,
+                                        weight=value[next_neuron, current_neuron].detach().abs().item())
             except StopIteration:
                 break
