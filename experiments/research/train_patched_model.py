@@ -13,7 +13,7 @@ model = PatchedModel().to(device)
 
 opt = torch.optim.Adam(lr=0.001, params=model.parameters())
 loss_fc = nn.MSELoss()
-ep = 50
+ep = 10
 picture_storage = []
 
 for i in range(ep):
@@ -44,7 +44,7 @@ for i in range(ep):
             print('TRAIN: EPOCH %d: BATCH %d: LOSS: %.4f' %
                   (i, h, np.mean(loss_train)))
 
-torch.save(model.state_dict(), "patched_model.pth")
+torch.save(model.state_dict(), "models/patched_model.pth")
 
 i_1, i_2 = 42, 69
 

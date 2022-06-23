@@ -11,16 +11,17 @@ from toumei.models import SimpleMLP
 
 import networkx as nx
 
-k = 8
+k = 3
 
 device = torch.device("cuda")
 
 network = PatchedModel().to(device)
-network.load_state_dict(torch.load("models/patched_model.pth"))
+network.load_state_dict(torch.load("patched_model.pth"))
 
-m_1 = SimpleMLP(28 * 28, (28 * 28) // 2, 10)
+m_1 = SimpleMLP(2 * 28 * 28, 28 * 28, 20, 20, 4, 1)
+m_1.load_state_dict(torch.load("trained_model.pth"))
 
-graph1 = MLPGraph(m_1)
+graph1 = MLPGraph(network)
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 7))
 fig.suptitle(f"Spectral Clustering k={k} - Q={graph1.get_model_modularity(n_clusters=k)}")

@@ -48,7 +48,9 @@ class PatchedModel(nn.Module):
                     block_1 = torch.rand_like(param1)
                     block_2 = torch.rand_like(param2)
 
-                patched_parameter = torch.cat((torch.cat((param1, block_1)), torch.cat((param2, block_2))), dim=1)
+                half_1 = torch.cat((param1, block_1))
+                half_2 = torch.cat((block_2, param2))
+                patched_parameter = torch.cat((half_1, half_2), dim=1)
                 parameter.data = patched_parameter.data
             elif 'bias' in key:
-                continue
+                parameter.requires_grad_(False)
