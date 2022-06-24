@@ -12,22 +12,22 @@ device = torch.device("cuda")
 data = tv.datasets.MNIST(root="./data", download=True, train=True, transform=ToTensor())
 dataLoader = torch.utils.data.DataLoader(data, batch_size=64, shuffle=True)
 
-ep = 100
+ep = 500
 network = SimpleMLP(2 * 28 * 28, 28 * 28, 20, 20, 4, 1).to(device)
 loss_fc = torch.nn.MSELoss()
-opt = torch.optim.Adam(lr=0.001, params=network.parameters())
+opt = torch.optim.Adam(lr=0.01, params=network.parameters())
 
 picture_storage = []
 
-a = np.random.randn() * 0.5 + 1
-b = np.random.randn() * 0.5 + 1
+a = 1
+b = 1
 
 for i in range(ep):
     loss_train = []
 
-    if i % 4 == 0:
-        a = np.random.randn() * 0.5 + 1
-        b = np.random.randn() * 0.5 + 1
+    if (i > 90) and (i % 10 == 0):
+        a = np.random.rand(1)[0] * 10
+        b = np.random.rand(1)[0] * 10
         opt = torch.optim.Adam(lr=0.001, params=network.parameters())
 
     for h, (element, label) in enumerate(dataLoader):
@@ -52,7 +52,7 @@ for i in range(ep):
             loss.backward()
             opt.step()
             loss_train.append(loss.item())
-            print('TRAIN: EPOCH %d: BATCH %d: LOSS: %.4f' %
-                  (i, h, np.mean(loss_train)))
+            print('TRAIN: EPOCH %d: BATCH %d: LOSS: %.4f PARAM_A: %.4f PARAM_B: %.4f' %
+                  (i, h, np.mean(loss_train), a, b))
 
 torch.save(network.state_dict(), "modular_varying_goals_model.pth")
