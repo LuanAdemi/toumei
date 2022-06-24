@@ -80,7 +80,7 @@ Following methods are currently or will be implemented:
     - [ ] DeepLift (planned)
     - [ ] SHAP methods (planned)
     - [ ] Circuit detection using feature atribution (research idea)
-- [x] [Model Modularity](https://www.lesswrong.com/tag/modularity/) **(1 & 4)**
+- [x] [Model Modularity](https://www.lesswrong.com/tag/modularity/)
     - [x] [Spectral Clustering](https://en.wikipedia.org/wiki/Spectral_clustering) for model graphs
     - [x] Implement the [network modularity metric](https://en.wikipedia.org/wiki/Modularity_(networks))
     - [x] Measuring modularity of MLPs
