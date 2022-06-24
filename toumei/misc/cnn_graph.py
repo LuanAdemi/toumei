@@ -55,7 +55,10 @@ class CNNGraph(ModelGraph):
                     for next_channel in range(value.shape[0]):
                         next_node = f"layer{current_layer + 1}:{next_channel}"
 
-                        super().add_edge(current_node, next_node,
+                        self.add_node(current_node, layer=current_layer)
+                        self.add_node(next_node, layer=current_layer + 1)
+
+                        self.add_edge(current_node, next_node,
                                          weight=torch.linalg.matrix_norm(
                                              value[next_channel, current_channel], ord=1).detach().item())
 

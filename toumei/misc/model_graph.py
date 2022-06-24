@@ -82,4 +82,4 @@ class ModelGraph(nx.Graph):
         spectral_partition, clusters = self._spectral_clustering(n_clusters)
 
         # calculate the modularity for the given partition
-        return nx.algorithms.community.modularity(self, spectral_partition, resolution=.5)
+        return nx.algorithms.community.modularity(self, spectral_partition)
