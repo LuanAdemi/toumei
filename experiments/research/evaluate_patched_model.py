@@ -6,20 +6,20 @@ import torch
 import matplotlib.pyplot as plt
 
 from experiments.research.patch_model import PatchedModel
-from toumei.misc import MLPGraph
-from toumei.models import SimpleMLP
+from toumei.misc import MLPGraph, CNNGraph
+from toumei.models import SimpleMLP, SimpleCNN
 
 import networkx as nx
 
-k = 3
+k = 8
 
 device = torch.device("cuda")
 
 network = PatchedModel().to(device)
-network.load_state_dict(torch.load("patched_model.pth"))
+network.load_state_dict(torch.load("models/patched_model_param.pth"))
 
-m_1 = SimpleMLP(2 * 28 * 28, 28 * 28, 20, 20, 4, 1)
-m_1.load_state_dict(torch.load("trained_model.pth"))
+m_1 = SimpleCNN(2, 1)
+m_1.load_state_dict(torch.load("models/mvg.pth"))
 
 graph1 = MLPGraph(network)
 

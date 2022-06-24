@@ -9,11 +9,11 @@ from experiments.research.patch_model import PatchedModel
 device = torch.device("cuda")
 data = tv.datasets.MNIST(root="./data", download=True, train=True, transform=ToTensor())
 dataLoader = torch.utils.data.DataLoader(data, batch_size=64, shuffle=True)
-model = PatchedModel().to(device)
+model = PatchedModel(weight_lock="param", zeros=True).to(device)
 
-opt = torch.optim.Adam(lr=0.001, params=model.parameters())
+opt = torch.optim.Adam(lr=0.0001, params=model.parameters())
 loss_fc = nn.MSELoss()
-ep = 10
+ep = 100
 picture_storage = []
 
 for i in range(ep):
