@@ -4,6 +4,7 @@ import torch.nn as nn
 from toumei.cnns.objectives.utils import freeze_model
 from toumei.models import SimpleMLP
 
+device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
 class GradientMask(object):
     def __init__(self, mask):
@@ -20,16 +21,16 @@ class PatchedModel(nn.Module):
         self.patched_m = SimpleMLP(2 * 28 * 28, 28 * 28, 20)
 
         m_1 = SimpleMLP(28 * 28, (28 * 28) // 2, 10)
-        m_1.load_state_dict(torch.load("models/mnist_model.pth"))
+        m_1.load_state_dict(torch.load("models/mnist_model.pth", map_location=device))
         m_2 = SimpleMLP(28 * 28, (28 * 28) // 2, 10)
-        m_2.load_state_dict(torch.load("models/mnist_model.pth"))
+        m_2.load_state_dict(torch.load("models/mnist_model.pth", map_location=device))
 
         self.patch_model(m_1, m_2, zeros=zeros, weight_lock=weight_lock)
 
         self.linear_layer = nn.Linear(20, 20)
 
         self.mlp = SimpleMLP(20, 4, 1)
-        self.mlp.load_state_dict(torch.load("models/addition_model.pth"))
+        self.mlp.load_state_dict(torch.load("models/addition_model.pth", map_location=device))
 
         freeze_model(self.mlp)
 
