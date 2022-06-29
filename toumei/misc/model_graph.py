@@ -2,7 +2,6 @@ import networkx as nx
 import torch.nn as nn
 
 from sklearn.cluster import SpectralClustering
-from community import community_louvain
 
 
 class ModelGraph(nx.Graph):
@@ -83,12 +82,12 @@ class ModelGraph(nx.Graph):
         if communities is None:
             if method == "spectral":
                 communities, clusters = self._spectral_clustering(n_clusters, gamma=resolution)
+                return nx.algorithms.community.modularity(self, communities=communities, resolution=resolution)
             elif method == "greedy":
                 communities = nx.community.greedy_modularity_communities(G, resolution=resolution)
+                return nx.algorithms.community.modularity(G, communities=communities, resolution=resolution)
             elif method == "louvain":
                 communities = nx.community.louvain_communities(G, resolution=resolution)
+                return nx.algorithms.community.modularity(G, communities=communities, resolution=resolution)
             else:
                 raise Exception("Not a valid clustering method")
-
-        # calculate the modularity for the given partition
-        return nx.algorithms.community.modularity(G, communities=communities, resolution=resolution)
