@@ -11,7 +11,7 @@ batch_size = 32
 beltalowda = OneHotEncodingDataset(69420)
 dataLoader = torch.utils.data.DataLoader(beltalowda, batch_size=batch_size)
 
-ep = 10
+ep = 35
 network = SimpleMLP(16, 8, 4, 1).to(device)
 loss_fc = torch.nn.MSELoss()
 opt = torch.optim.Adam(lr=1e-3, params=network.parameters())
@@ -25,16 +25,6 @@ global_losses = []
 
 for i in range(ep):
     loss_train = []
-
-    if i % 2 == 0:
-        if current_task == 0:
-            a = 1
-            b = 1
-            current_task = 1
-        else:
-            a = 1
-            b = -1
-            current_task = 0
 
     for h, (element, label) in enumerate(dataLoader):
         element = element.to(device)
@@ -51,7 +41,8 @@ for i in range(ep):
         print('TRAIN: EPOCH %d: BATCH %d: LOSS: %.4f PARAM_A: %.4f PARAM_B: %.4f' %
               (i, h, np.mean(loss_train), a, b))
 
-x1 = np.linspace(1, 21700, num=21700)
+torch.save(network.state_dict(), "binary_addition_model_no_mvg.pth")
+x1 = np.linspace(1, len(global_losses), num=len(global_losses))
 plt.plot(x1, global_losses)
 plt.show()
-# torch.save(network.state_dict(), "binary_addition_model_great_again_womvg.pth")
+

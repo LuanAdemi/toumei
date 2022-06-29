@@ -26,7 +26,7 @@ current_task = 0
 for i in range(ep):
     loss_train = []
 
-    if i % 3 == 0:
+    if i % 4 == 0:
         if current_task == 0:
             a = random.random()*10
             b = random.random()*10

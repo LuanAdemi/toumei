@@ -82,12 +82,22 @@ class ModelGraph(nx.Graph):
         if communities is None:
             if method == "spectral":
                 communities, clusters = self._spectral_clustering(n_clusters, gamma=resolution)
-                return nx.algorithms.community.modularity(self, communities=communities, resolution=resolution)
+                return nx.algorithms.community.modularity(self, communities=communities, resolution=resolution), clusters
             elif method == "greedy":
                 communities = nx.community.greedy_modularity_communities(G, resolution=resolution)
-                return nx.algorithms.community.modularity(G, communities=communities, resolution=resolution)
+                clusters = [0 for _ in range(len(self.nodes()))]
+
+                for i, community in enumerate(communities):
+                    for j, node in enumerate(community):
+                        clusters[node] = i
+                return nx.algorithms.community.modularity(G, communities=communities, resolution=resolution), clusters
             elif method == "louvain":
-                communities = nx.community.louvain_communities(G, resolution=resolution)
-                return nx.algorithms.community.modularity(G, communities=communities, resolution=resolution)
+                self.__class__ = nx.Graph
+                communities = nx.community.louvain_communities(self, resolution=resolution)
+                clusters = [0 for _ in range(len(self.nodes()))]
+                for i, community in enumerate(communities):
+                    for j, node in enumerate(community):
+                        clusters[list(self.nodes()).index(node)] = i
+                return nx.algorithms.community.modularity(self, communities=communities, resolution=resolution), clusters
             else:
                 raise Exception("Not a valid clustering method")
