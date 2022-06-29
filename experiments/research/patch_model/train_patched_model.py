@@ -4,12 +4,12 @@ import torch.nn as nn
 import torchvision as tv
 from torchvision.transforms import ToTensor
 
-from experiments.research.patch_model import PatchedModel
+from experiments.research.patch_model.patch_model import PatchedModel
 
 device = torch.device("cuda")
 data = tv.datasets.MNIST(root="./data", download=True, train=True, transform=ToTensor())
 dataLoader = torch.utils.data.DataLoader(data, batch_size=64, shuffle=True)
-model = PatchedModel(weight_lock="param", zeros=True).to(device)
+model = PatchedModel(weight_lock="none", lock_bias=False, zeros=True).to(device)
 
 opt = torch.optim.Adam(lr=0.0001, params=model.parameters())
 loss_fc = nn.MSELoss()
@@ -44,7 +44,7 @@ for i in range(ep):
             print('TRAIN: EPOCH %d: BATCH %d: LOSS: %.4f' %
                   (i, h, np.mean(loss_train)))
 
-torch.save(model.state_dict(), "models/patched_model.pth")
+torch.save(model.state_dict(), "../models/patched_model.pth")
 
 i_1, i_2 = 42, 69
 

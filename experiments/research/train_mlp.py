@@ -14,7 +14,7 @@ batch_size = 32
 data = tv.datasets.MNIST(root="./data", download=True, train=True, transform=ToTensor())
 dataLoader = torch.utils.data.DataLoader(data, batch_size=batch_size, shuffle=True)
 
-ep = 400
+ep = 200
 network = SimpleMLP(2 * 28 * 28, 1024, 128, 64, 32, 1).to(device)
 loss_fc = torch.nn.MSELoss()
 opt = torch.optim.Adam(lr=1e-3, params=network.parameters())
@@ -23,18 +23,11 @@ picture_storage = []
 
 current_task = 0
 
+a=1
+b=1
+
 for i in range(ep):
     loss_train = []
-
-    if i % 3 == 0:
-        if current_task == 0:
-            a = random.random()*10
-            b = random.random()*10
-            current_task = 1
-        else:
-            a = 1
-            b = 1
-            current_task = 0
 
     for h, (element, label) in enumerate(dataLoader):
         # if batch is not complete
@@ -61,4 +54,4 @@ for i in range(ep):
             print('TRAIN: EPOCH %d: BATCH %d: LOSS: %.4f PARAM_A: %.4f PARAM_B: %.4f' %
                   (i, h, np.mean(loss_train), a, b))
 
-torch.save(network.state_dict(), "modular_varying_goals_model.pth")
+torch.save(network.state_dict(), "trained_model.pth")

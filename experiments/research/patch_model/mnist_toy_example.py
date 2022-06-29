@@ -31,4 +31,4 @@ for i in range(ep):
         print('TRAIN: EPOCH %d: BATCH %d: LOSS: %.4f' %
               (i, h, np.mean(loss_train)))
 
-torch.save(network.state_dict(), "models/mnist_model.pth")
+torch.save(network.state_dict(), "../models/mnist_model.pth")

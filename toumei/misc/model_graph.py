@@ -2,6 +2,7 @@ import networkx as nx
 import torch.nn as nn
 
 from sklearn.cluster import SpectralClustering
+from community import community_louvain
 
 
 class ModelGraph(nx.Graph):
@@ -19,7 +20,8 @@ class ModelGraph(nx.Graph):
         super(ModelGraph, self).__init__()
 
         self.model = model
-        self._build_graph()
+        if model is not None:
+            self._build_graph()
 
     def __str__(self):
         return f"ModelGraph()"
@@ -46,7 +48,7 @@ class ModelGraph(nx.Graph):
         """
         return NotImplementedError
 
-    def _spectral_clustering(self, n_clusters=32):
+    def _spectral_clustering(self, n_clusters=32, gamma=1.):
         """
         Performs network-wide spectral clustering.
 
@@ -57,7 +59,7 @@ class ModelGraph(nx.Graph):
         node_list = list(self.nodes())
 
         clusters = SpectralClustering(eigen_solver='arpack', n_init=100, affinity='precomputed', assign_labels="kmeans",
-                                      n_clusters=n_clusters).fit_predict(adj_matrix)
+                                      n_clusters=n_clusters, gamma=gamma).fit_predict(adj_matrix)
 
         communities = [set() for _ in range(n_clusters)]
 
@@ -69,7 +71,7 @@ class ModelGraph(nx.Graph):
 
         return communities, clusters
 
-    def get_model_modularity(self, n_clusters=8):
+    def get_model_modularity(self, n_clusters=8, resolution=1, method="louvain", communities=None):
         """
         Calculate the best-case modularity of the model by calculating the graph modularity
 
@@ -77,9 +79,16 @@ class ModelGraph(nx.Graph):
 
         :return: the model modularity
         """
-
-        # perform spectral clustering for partitioning the graph
-        spectral_partition, clusters = self._spectral_clustering(n_clusters)
+        G = nx.Graph(nx.adjacency_matrix(self))
+        if communities is None:
+            if method == "spectral":
+                communities, clusters = self._spectral_clustering(n_clusters, gamma=resolution)
+            elif method == "greedy":
+                communities = nx.community.greedy_modularity_communities(G, resolution=resolution)
+            elif method == "louvain":
+                communities = nx.community.louvain_communities(G, resolution=resolution)
+            else:
+                raise Exception("Not a valid clustering method")
 
         # calculate the modularity for the given partition
-        return nx.algorithms.community.modularity(self, spectral_partition)
+        return nx.algorithms.community.modularity(G, communities=communities, resolution=resolution)

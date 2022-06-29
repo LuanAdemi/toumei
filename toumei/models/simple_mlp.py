@@ -21,9 +21,9 @@ class SimpleMLP(nn.Module):
 
         self.layers = add_layers(self, dimensions)
 
-        self.relu = nn.ReLU()
+        self.relu = nn.LeakyReLU()
 
     def forward(self, x):
-        for layer in self.layers:
+        for layer in self.layers[:-1]:
             x = self.relu(layer(x))
-        return x
+        return self.layers[-1](x)

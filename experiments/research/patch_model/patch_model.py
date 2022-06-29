@@ -15,7 +15,7 @@ class GradientMask(object):
 
 
 class PatchedModel(nn.Module):
-    def __init__(self, zeros=True, weight_lock="model"):
+    def __init__(self, zeros=True, weight_lock="model", lock_bias=True):
         super(PatchedModel, self).__init__()
 
         self.patched_m = SimpleMLP(2 * 28 * 28, 28 * 28, 20)
@@ -25,7 +25,7 @@ class PatchedModel(nn.Module):
         m_2 = SimpleMLP(28 * 28, (28 * 28) // 2, 10)
         m_2.load_state_dict(torch.load("models/mnist_model.pth", map_location=device))
 
-        self.patch_model(m_1, m_2, zeros=zeros, weight_lock=weight_lock)
+        self.patch_model(m_1, m_2, zeros=zeros, weight_lock=weight_lock, lock_bias=lock_bias)
 
         self.linear_layer = nn.Linear(20, 20)
 
@@ -81,4 +81,5 @@ class PatchedModel(nn.Module):
 
             elif 'bias' in key:
                 if lock_bias:
+                    parameter.data = torch.cat((param1, param2))
                     parameter.requires_grad_(False)
