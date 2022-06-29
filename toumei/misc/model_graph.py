@@ -93,11 +93,14 @@ class ModelGraph(nx.Graph):
                 return nx.algorithms.community.modularity(G, communities=communities, resolution=resolution), clusters
             elif method == "louvain":
                 self.__class__ = nx.Graph
+
                 communities = nx.community.louvain_communities(self, resolution=resolution)
                 clusters = [0 for _ in range(len(self.nodes()))]
+
                 for i, community in enumerate(communities):
                     for j, node in enumerate(community):
                         clusters[list(self.nodes()).index(node)] = i
+
                 return nx.algorithms.community.modularity(self, communities=communities, resolution=resolution), clusters
             else:
                 raise Exception("Not a valid clustering method")
