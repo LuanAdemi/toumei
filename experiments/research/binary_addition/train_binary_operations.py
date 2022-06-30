@@ -9,7 +9,7 @@ from toumei.models import SimpleMLP
 
 
 class BinaryOperationsHandler(object):
-    def __init__(self, task="add", ep=10, len_dataset=2 ** 15, bits=3, batch_size=1, lr=1e-2, hid_dimension=6):
+    def __init__(self, task="add", ep=10, len_dataset=2 ** 15, bits=3, batch_size=1, lr=1e-3, hid_dimensions=(16)):
         if task == "add":
             self.task = AddOperator()
         elif task == "xor":
@@ -22,15 +22,15 @@ class BinaryOperationsHandler(object):
         self.bits = bits
         self.batch_size = batch_size
         self.lr = lr
-        self.hid_dimension = hid_dimension
+        self.hid_dimensions = hid_dimensions
 
         self.data = BinaryDataset(self.len_dataset, bits=bits)
         self.dataLoader = torch.utils.data.DataLoader(self.data, batch_size=batch_size)
         self.device = "cuda"
         self.loss_fc = torch.nn.MSELoss()
 
-    def train_on_binary_numbers(self, save_model=False, save_plot=False, task="addition"):
-        network = SimpleMLP(self.bits * 2, self.hid_dimension, 1).to(self.device)
+    def train_on_binary_numbers(self, save_model=False, save_plot=False):
+        network = SimpleMLP(self.bits * 2, *self.hid_dimensions, 1).to(self.device)
         opt = torch.optim.Adam(lr=1e-2, params=network.parameters())
         global_losses = []
         for i in range(self.ep):
@@ -57,11 +57,11 @@ class BinaryOperationsHandler(object):
         plt.show()
 
         if save_plot:
-            plt.savefig("plots/" + task)
+            plt.savefig("plots/" + self.task.get_name())
 
         if save_model:
-            torch.save(network.state_dict(), "models/" + task + "_model.pth")
+            torch.save(network.state_dict(), "models/" + self.task.get_name() + "_model.pth")
 
 
-handler = BinaryOperationsHandler(task="xor", len_dataset=2 ** 8, bits=3, hid_dimension=16)
-handler.train_on_binary_numbers(save_model=True, save_plot=True)
+handler = BinaryOperationsHandler(task="xoradd", ep=1100, len_dataset=2 ** 7, bits=3, hid_dimensions=(16, 8, 4))
+handler.train_on_binary_numbers(save_model=True)

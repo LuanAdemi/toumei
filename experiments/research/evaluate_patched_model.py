@@ -1,34 +1,33 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 import torch
+from netgraph import Graph
 
 from toumei.misc import MLPGraph
 from toumei.models import SimpleMLP
-
-from netgraph import Graph
 
 k = 6
 
 device = torch.device("cuda")
 
-network = SimpleMLP(16, 8, 4, 2, 1).to(device)
-network.load_state_dict(torch.load("onehot_addition/binary_addition_model_1.pth"))
+network = SimpleMLP(6, 16, 8, 4, 1).to(device)
+network.load_state_dict(torch.load("binary_addition/models/xoradd_model.pth"))
 
 graph1 = MLPGraph(network)
 
 Q, clusters = graph1.get_model_modularity(n_clusters=k, method="louvain")
 
 community_to_color = {
-    0 : 'tab:blue',
-    1 : 'tab:orange',
-    2 : 'tab:green',
-    3 : 'tab:red',
+    0: 'tab:blue',
+    1: 'tab:orange',
+    2: 'tab:green',
+    3: 'tab:red',
     4 : 'blue',
     5 : 'orange'
 }
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 7))
-fig.suptitle(f"MVG - Louvain - Q={Q}")
+fig.suptitle(f"Serial task (XOR + Add) - Louvain - Q={Q}")
 
 community = {list(graph1.nodes())[n]: c for n, c in enumerate(clusters)}
 node_color = {node: community_to_color[community_id] for node, community_id in community.items()}
