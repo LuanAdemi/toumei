@@ -7,12 +7,12 @@ from experiments.research.binary_addition.two_numbers_datasets import OneHotEnco
 from toumei.models import SimpleMLP
 
 device = torch.device("cuda")
-batch_size = 1
-beltalowda = OneHotEncodingDataset(11000)
-dataLoader = torch.utils.data.DataLoader(beltalowda, batch_size=batch_size)
+batch_size = 16
+dataset = OneHotEncodingDataset(11000)
+dataLoader = torch.utils.data.DataLoader(dataset, batch_size=batch_size)
 
-ep = 250
-network = SimpleMLP(16, 8, 4, 2, 1).to(device)
+ep = 100
+network = SimpleMLP(16, 32, 64, 32, 16, 1).to(device)
 loss_fc = torch.nn.MSELoss()
 opt = torch.optim.Adam(lr=1e-3, params=network.parameters())
 
@@ -26,6 +26,7 @@ global_losses = []
 for i in range(ep):
     loss_train = []
 
+    # MVG
     if i % 2 == 0:
         if current_task == 0:
             a = 1
@@ -51,7 +52,7 @@ for i in range(ep):
         print('TRAIN: EPOCH %d: BATCH %d: LOSS: %.4f PARAM_A: %.4f PARAM_B: %.4f' %
               (i, h, np.mean(loss_train), a, b))
 
-torch.save(network.state_dict(), "binary_addition_model_1_no_mvg.pth")
+torch.save(network.state_dict(), "models/binary_addition_model_big.pth")
 x1 = np.linspace(1, len(global_losses), num=len(global_losses))
 plt.plot(x1, global_losses)
 plt.show()

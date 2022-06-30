@@ -44,7 +44,7 @@ for i in range(ep):
             print('TRAIN: EPOCH %d: BATCH %d: LOSS: %.4f' %
                   (i, h, np.mean(loss_train)))
 
-torch.save(model.state_dict(), "../models/patched_model.pth")
+torch.save(model.state_dict(), "models/patched_model.pth")
 
 i_1, i_2 = 42, 69
 

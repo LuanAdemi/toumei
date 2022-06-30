@@ -10,8 +10,8 @@ k = 6
 
 device = torch.device("cuda")
 
-network = SimpleMLP(6, 16, 8, 4, 1).to(device)
-network.load_state_dict(torch.load("binary_addition/models/xoradd_model.pth"))
+network = SimpleMLP(16, 32, 64, 32, 16, 1).to(device)
+network.load_state_dict(torch.load("onehot_addition/models/binary_addition_model_big.pth"))
 
 graph1 = MLPGraph(network)
 
@@ -27,7 +27,7 @@ community_to_color = {
 }
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 7))
-fig.suptitle(f"Serial task (XOR + Add) - Louvain - Q={Q}")
+fig.suptitle(f"MVG - OneHot - Louvain - Q={Q}")
 
 community = {list(graph1.nodes())[n]: c for n, c in enumerate(clusters)}
 node_color = {node: community_to_color[community_id] for node, community_id in community.items()}
