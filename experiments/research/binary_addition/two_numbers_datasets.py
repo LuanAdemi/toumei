@@ -15,20 +15,20 @@ class OneHotEncodingDataset(Dataset):
     between 0 and 7 as one tensor per item.
     """
 
-    def __init__(self, length, bits=8):
+    def __init__(self, length, max_number):
         super(OneHotEncodingDataset, self).__init__()
         self.length = length
-        self.bits = bits
+        self.max_number = max_number
 
     def __len__(self):
         return self.length
 
     def __getitem__(self, item):
-        a = random.randint(0, self.bits-1)
-        b = random.randint(0, self.bits-1)
-        one_hot_a = torch.zeros((1, self.bits))
+        a = random.randint(0, self.max_number)
+        b = random.randint(0, self.max_number)
+        one_hot_a = torch.zeros((1, self.max_number + 1))
         one_hot_a[0, a] = 1
-        one_hot_b = torch.zeros((1, self.bits))
+        one_hot_b = torch.zeros((1, self.max_number + 1))
         one_hot_b[0, b] = 1
 
         data = torch.cat((one_hot_a, one_hot_b), dim=1)
