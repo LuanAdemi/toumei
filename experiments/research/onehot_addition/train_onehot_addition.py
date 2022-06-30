@@ -8,11 +8,11 @@ from toumei.models import SimpleMLP
 
 device = torch.device("cuda")
 batch_size = 16
-dataset = OneHotEncodingDataset(11000)
-dataLoader = torch.utils.data.DataLoader(dataset, batch_size=batch_size)
+beltalowda = OneHotEncodingDataset(21000, bits=128)
+dataLoader = torch.utils.data.DataLoader(beltalowda, batch_size=batch_size)
 
 ep = 100
-network = SimpleMLP(16, 32, 64, 32, 16, 1).to(device)
+network = SimpleMLP(256, 128, 64, 32, 1).to(device)
 loss_fc = torch.nn.MSELoss()
 opt = torch.optim.Adam(lr=1e-3, params=network.parameters())
 
@@ -26,17 +26,6 @@ global_losses = []
 for i in range(ep):
     loss_train = []
 
-    # MVG
-    if i % 2 == 0:
-        if current_task == 0:
-            a = 1
-            b = 1
-            current_task = 1
-        else:
-            a = 1
-            b = -1
-            current_task = 0
-
     for h, (element, label) in enumerate(dataLoader):
         element = element.to(device)
         (x1, x2) = label
@@ -49,10 +38,10 @@ for i in range(ep):
 
         loss_train.append(loss.item())
         global_losses.append(loss.item())
-        print('TRAIN: EPOCH %d: BATCH %d: LOSS: %.4f PARAM_A: %.4f PARAM_B: %.4f' %
+    print('TRAIN: EPOCH %d: BATCH %d: LOSS: %.4f PARAM_A: %.4f PARAM_B: %.4f' %
               (i, h, np.mean(loss_train), a, b))
 
-torch.save(network.state_dict(), "models/binary_addition_model_big.pth")
+torch.save(network.state_dict(), "models/binary_addition_model_481_no_mvg.pth")
 x1 = np.linspace(1, len(global_losses), num=len(global_losses))
 plt.plot(x1, global_losses)
 plt.show()
