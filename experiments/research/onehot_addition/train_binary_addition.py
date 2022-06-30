@@ -1,15 +1,13 @@
-import random
-
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from experiments.research.onehot_addition.OneHotEncodingDataset import OneHotEncodingDataset
+from experiments.research.binary_addition.two_numbers_datasets import OneHotEncodingDataset
 from toumei.models import SimpleMLP
 
 device = torch.device("cuda")
-batch_size = 32
+batch_size = 1
 beltalowda = OneHotEncodingDataset(11000)
 dataLoader = torch.utils.data.DataLoader(beltalowda, batch_size=batch_size)
 
@@ -28,7 +26,7 @@ global_losses = []
 for i in range(ep):
     loss_train = []
 
-    if not True:
+    if i % 2 == 0:
         if current_task == 0:
             a = 1
             b = 1

@@ -57,10 +57,10 @@ class BinaryOperationsHandler(object):
         plt.show()
 
         if save_plot:
-            plt.savefig("plots/", task)
+            plt.savefig("plots/" + task)
 
         if save_model:
-            torch.save(network.state_dict(), "models/", task, "_model.pth")
+            torch.save(network.state_dict(), "models/" + task + "_model.pth")
 
 
 handler = BinaryOperationsHandler(task="xor", len_dataset=2 ** 8, bits=3, hid_dimension=16)
