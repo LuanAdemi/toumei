@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 import torch
-from netgraph import Graph
 
 from toumei.misc import MLPGraph
 from toumei.models import SimpleMLP
@@ -20,8 +19,8 @@ community_to_color = {
     1: 'tab:orange',
     2: 'tab:green',
     3: 'tab:red',
-    4 : 'blue',
-    5 : 'orange'
+    4: 'blue',
+    5: 'orange'
 }
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 7))
