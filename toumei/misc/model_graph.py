@@ -70,37 +70,49 @@ class ModelGraph(nx.Graph):
 
         return communities, clusters
 
-    def get_model_modularity(self, n_clusters=8, resolution=1, method="louvain", communities=None):
+    def get_model_modularity(self, n_clusters=8, resolution=1, method="louvain"):
         """
-        Calculate the best-case modularity of the model by calculating the graph modularity
+        Calculate the modularity of the model by first finding the best partitioning and then calculating the graph
+        modularity.
 
-        The values range from [-1, 2.1].
+        :param n_clusters The number of clusters used for cluster-based partitioning methods
+        :param resolution The resolution for calculating the graph modularity (see the Resolution Limit Problem)
+        :param method The partitioning method (spectral, greedy, louvain[preferred])
 
         :return: the model modularity
         """
-        G = nx.Graph(nx.adjacency_matrix(self))
-        if communities is None:
-            if method == "spectral":
-                communities, clusters = self._spectral_clustering(n_clusters, gamma=resolution)
-                return nx.algorithms.community.modularity(self, communities=communities, resolution=resolution), clusters
-            elif method == "greedy":
-                communities = nx.community.greedy_modularity_communities(G, resolution=resolution)
-                clusters = [0 for _ in range(len(self.nodes()))]
+        self.__class__ = nx.Graph
 
-                for i, community in enumerate(communities):
-                    for j, node in enumerate(community):
-                        clusters[node] = i
-                return nx.algorithms.community.modularity(G, communities=communities, resolution=resolution), clusters
-            elif method == "louvain":
-                self.__class__ = nx.Graph
+        if method == "spectral":
+            """
+            Spectral clustering for graph partitioning. This needs a fix number of clusters.
+            """
+            communities, clusters = self._spectral_clustering(n_clusters, gamma=resolution)
 
-                communities = nx.community.louvain_communities(self, resolution=resolution)
-                clusters = [0 for _ in range(len(self.nodes()))]
+        elif method == "greedy":
+            """
+            Partitioning by greedily maximizing the graph modularity
+            """
+            communities = nx.community.greedy_modularity_communities(self, resolution=resolution)
+            clusters = [0 for _ in range(len(self.nodes()))]
 
-                for i, community in enumerate(communities):
-                    for j, node in enumerate(community):
-                        clusters[list(self.nodes()).index(node)] = i
+            for i, community in enumerate(communities):
+                for j, node in enumerate(community):
+                    clusters[node] = i
 
-                return nx.algorithms.community.modularity(self, communities=communities, resolution=resolution), clusters
-            else:
-                raise Exception("Not a valid clustering method")
+        elif method == "louvain":
+            """
+            Partitioning using the louvain algorithm
+            """
+
+            communities = nx.community.louvain_communities(self, resolution=resolution)
+            clusters = [0 for _ in range(len(self.nodes()))]
+
+            for i, community in enumerate(communities):
+                for j, node in enumerate(community):
+                    clusters[list(self.nodes()).index(node)] = i
+
+        else:
+            raise Exception("Not a valid partitioning method (spectral, greedy, louvain[preferred])")
+
+        return nx.algorithms.community.modularity(self, communities=communities, resolution=resolution), clusters
