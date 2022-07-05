@@ -1,7 +1,8 @@
+import random as rand
 from abc import abstractmethod, ABC
-from random import random
 
 import numpy as np
+import torch
 
 
 class Task(ABC):
@@ -26,28 +27,57 @@ class Task(ABC):
 
     def change_params(self):
         for i in range(len(self.mvg_parameters)):
-            self.mvg_parameters[i] = random.randint(low=self.lower_bound, high=self.upper_bound)
+            self.mvg_parameters[i] = rand.randint(self.lower_bound, self.upper_bound)
+            print("changed params")
 
 
 class XorOperator(Task):
-    def operate(self, x1, x2):
-        return x1 ^ x2
+    def operate(self, params_list):
+        """Takes a batch of float tensors."""
+        results = []
+        for batch in params_list:
+            result = 0
+            for param in batch:
+                # incoming tensors are float
+                result = result ^ param.int()
+            results.append(result)
+        return torch.Tensor(results)
 
     def get_name(self):
         return "xor"
 
 
 class AddOperator(Task):
-    def operate(self, x1, x2):
-        return x1 + x2
+    def operate(self, params_list):
+        """Takes a batch of float tensors."""
+        results = []
+        for batch in params_list:
+            result = 0
+            for param in batch:
+                # incoming tensors are float
+                result += param.int()
+            results.append(result)
+        return torch.Tensor(results)
 
     def get_name(self):
         return "add"
 
 
 class XorAddOperator(Task):
-    def operate(self, x1, x2):
-        return x1 ^ x2 + x1
+    def operate(self, params_list):
+        """Takes a batch of float tensors."""
+        results = []
+        for batch in params_list:
+            result = 0
+            for param in batch:
+                # incoming tensors are float
+                result = result ^ param.int()
+
+            for param in batch:
+                result += param.int()
+
+            results.append(result)
+        return torch.Tensor(results)
 
     def get_name(self):
         return "xoradd"

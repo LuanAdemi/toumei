@@ -20,23 +20,25 @@ class BinaryOperationsHandler(object):
         self.lr = lr
         self.hid_dimensions = hid_dimensions
 
-        self.data = BinaryDataset(self.len_dataset, bits=input_size) if binary \
-            else OneHotEncodingDataset(self.len_dataset, max_number=input_size)
+        self.data = BinaryDataset(self.len_dataset, bits=input_size, batch=numbers_to_process) if binary \
+            else OneHotEncodingDataset(self.len_dataset, max_number=input_size, batch=numbers_to_process)
         self.dataLoader = torch.utils.data.DataLoader(self.data, batch_size=batch_size)
-        self.device = "cuda"
+        self.device = torch.device("cuda")
         self.loss_fc = torch.nn.MSELoss()
 
     def train(self, save_model=False, save_plot=False):
-        network = SimpleMLP(self.numbers_to_process, *self.hid_dimensions, 1).to(self.device)
+        network = SimpleMLP(self.numbers_to_process * self.input_size, *self.hid_dimensions, 1).to(self.device)
         opt = torch.optim.Adam(lr=1e-2, params=network.parameters())
         global_losses = []
         for i in range(self.ep):
             loss_train = []
 
+            if i % self.task.mvg_change_epochs == 0 and i > self.task.no_mvg_epochs:
+                self.task.change_params()
+
             for h, (element, label) in enumerate(self.dataLoader):
                 element = element.to(self.device)
-                (x1, x2) = label
-                result = self.task.operate(x1, x2)
+                result = self.task.operate(label)
                 predicted_result = network(element)
                 opt.zero_grad()
                 loss = self.loss_fc(predicted_result.view(-1), result.float().to(self.device))
@@ -74,8 +76,9 @@ class BinaryOperationsHandler(object):
         return info
 
 
-task = XorAddOperator(mvg=True, mvg_change_epochs=10)
-handler = BinaryOperationsHandler(binary=False, task=task, ep=1000, len_dataset=2 ** 8, input_size=32, batch_size=8,
-                                  hid_dimensions=(64, 16, 4))
+task = XorAddOperator(mvg=True, mvg_change_epochs=100, no_mvg_epochs=100)
+handler = BinaryOperationsHandler(binary=False, task=task, numbers_to_process=8, ep=1000, len_dataset=2 ** 8,
+                                  input_size=4, batch_size=8,
+                                  hid_dimensions=(128, 64, 4))
 print(handler.props_to_string())
-# handler.train(save_model=True)
+handler.train(save_model=True)
