@@ -31,7 +31,11 @@ class BroadnessMeasurer(object):
     def measure_broadness(self, std_list, num_iters=1):
         losses_measured = []
         for std in std_list:
-            losses_measured.append(self.measure_broadness_for_std(std, num_iters))
+            if std == 0:
+                #for std 0 always measure on time since there is only one possible outcome
+                losses_measured.append(self.measure_broadness_for_std(std))
+            else:
+                losses_measured.append(self.measure_broadness_for_std(std, num_iters))
         sns.heatmap(losses_measured)
         plt.show()
         return losses_measured
