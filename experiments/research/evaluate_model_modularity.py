@@ -7,8 +7,8 @@ from toumei.models import SimpleMLP
 
 device = torch.device("cuda")
 
-network = SimpleMLP(512, 256, 128, 64, 1).to(device)
-network.load_state_dict(torch.load("onehot_addition/models/binary_addition_model_961.pth"))
+network = SimpleMLP(784 * 2, 512, 512, 128, 4, 1).to(device)
+network.load_state_dict(torch.load("binary_addition/models/add_False_model.pth"))
 
 graph1 = MLPGraph(network)
 

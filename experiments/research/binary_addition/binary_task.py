@@ -25,10 +25,12 @@ class Task(ABC):
     def get_name(self):
         return "task"
 
-    def change_params(self):
+    def change_params(self, random_goals=True):
         for i in range(len(self.mvg_parameters)):
-            self.mvg_parameters[i] = rand.randint(self.lower_bound, self.upper_bound)
-            print("changed params")
+            if random_goals:
+                self.mvg_parameters[i] = rand.randint(self.lower_bound, self.upper_bound)
+            else:
+                self.mvg_parameters[i] *= -1 ** i
 
 
 class XorOperator(Task):
