@@ -9,11 +9,19 @@ class Task(ABC):
     """An abstract class that handles different mvg tasks.
     Its abstract method is 'operate', which all tasks have to implement."""
 
-    def __init__(self, mvg=False, mvg_size=5, no_mvg_epochs=2, mvg_change_epochs=5, lower_bound=-1, upper_bound=2):
+    def __init__(self, mvg=False, mvg_size=2, no_mvg_epochs=2, mvg_change_epochs=5, mvg_parameters=[], lower_bound=-1,
+                 upper_bound=2):
         self.mvg = mvg
         self.no_mvg_epochs = no_mvg_epochs
         self.mvg_change_epochs = mvg_change_epochs
-        self.mvg_parameters = np.ones(mvg_size).tolist()
+        if len(mvg_parameters) == 0:
+            self.mvg_parameters = np.ones(mvg_size).tolist()
+        else:
+            if len(mvg_parameters) == mvg_size:
+                self.mvg_parameters = mvg_parameters
+            else:
+                self.mvg_parameters = mvg_parameters
+                print("Warning: mvg params length and mvg size are different. This will lead to errors.")
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
 
@@ -39,9 +47,9 @@ class XorOperator(Task):
         results = []
         for batch in params_list:
             result = 0
-            for param in batch:
+            for i, param in enumerate(batch):
                 # incoming tensors are float
-                result = result ^ param.int()
+                result = result ^ param.int() * self.mvg_parameters[i]
             results.append(result)
         return torch.Tensor(results)
 
@@ -55,9 +63,9 @@ class AddOperator(Task):
         results = []
         for batch in params_list:
             result = 0
-            for param in batch:
+            for i, param in enumerate(batch):
                 # incoming tensors are float
-                result += param.int()
+                result += param.int() * self.mvg_parameters[i]
             results.append(result)
         return torch.Tensor(results)
 
@@ -75,8 +83,8 @@ class XorAddOperator(Task):
                 # incoming tensors are float
                 result = result ^ param.int()
 
-            for param in batch:
-                result += param.int()
+            for i, param in enumerate(batch):
+                result += param.int() * self.mvg_parameters[i]
 
             results.append(result)
         return torch.Tensor(results)

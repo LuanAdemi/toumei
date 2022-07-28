@@ -49,6 +49,7 @@ class BinaryOperationsHandler(object):
         for i in range(self.ep):
             loss_train = []
 
+
             if i % self.task.mvg_change_epochs == 0 and i > self.task.no_mvg_epochs:
                 self.task.change_params(random_goals=False)
 
@@ -66,18 +67,17 @@ class BinaryOperationsHandler(object):
             print('TRAIN: EPOCH %d: BATCH %d: LOSS: %.4f PARAMS: %s' %
                   (i, h, np.mean(loss_train), str(self.task.mvg_parameters)))
 
-        len_losses = (self.len_dataset // self.batch_size) * self.ep
-        x1 = np.linspace(1, len_losses, num=len_losses)
-        plt.plot(x1, global_losses)
-        plt.show()
-
-        if save_plot:
-            plt.savefig("plots/" + self.task.get_name())
-
         if save_model:
             torch.save(network.state_dict(),
-                       "models/mnist_add_2_with_inc_model_size/" + "mnist_add_2_with_inc_model_size" + str(
+                       "models/mnist_add_2_same_size/" + "mnist_add_2_same_size" + str(
                            iteration) + ".pth")
+
+        if save_plot:
+            len_losses = (self.len_dataset // self.batch_size) * self.ep
+            x1 = np.linspace(1, len_losses, num=len_losses)
+            plt.plot(x1, global_losses)
+            plt.show()
+            plt.savefig("plots/" + self.task.get_name())
 
     def props_to_string(self):
         info = "----------------------------------------\n"
@@ -95,9 +95,9 @@ class BinaryOperationsHandler(object):
 
 
 task = AddOperator(mvg=True, mvg_size=2, mvg_change_epochs=2, no_mvg_epochs=0)
-for i in range(50):
-    handler = BinaryOperationsHandler(data="mnist", task=task, numbers_to_process=2, ep=250, len_dataset=60000,
-                                      input_size=4, batch_size=32,
-                                      hid_dimensions=(384 + (256 // 25) * i, 384 + (256 // 25) * i, 128, 4))
+for i in range(1):
+    handler = BinaryOperationsHandler(data="mnist", task=task, numbers_to_process=2, ep=100, len_dataset=60000,
+                                      input_size=4, batch_size=(12),
+                                      hid_dimensions=(784, 256, 128, 4))
     print(handler.props_to_string())
-    handler.train(save_plot=True, save_model=True, iteration=i)
+    handler.train(save_plot=False, save_model=True, iteration=i)
