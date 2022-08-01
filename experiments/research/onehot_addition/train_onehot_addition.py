@@ -1,9 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from torch.utils.data import DataLoader
 
-from experiments.research.binary_addition.two_numbers_datasets import OneHotEncodingDataset
+from experiments.research.binary_addition.n_numbers_datasets import OneHotEncodingDataset
 from toumei.models import SimpleMLP
 
 device = torch.device("cuda")
