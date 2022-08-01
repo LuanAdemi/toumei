@@ -1,4 +1,4 @@
-from toumei.general.objective import Objective
+from toumei.parents.objective import Objective
 from toumei.models.explanation_models import LinearExplanationModel
 
 

@@ -3,7 +3,7 @@ import torch.nn as nn
 import tqdm
 from toumei.cnns.featurevis.objectives.tv_loss import TVLoss
 from toumei.cnns.featurevis.parameterization.imagegenerator import ImageGenerator
-from toumei.general.objective import Objective
+from toumei.parents.objective import Objective
 
 
 class FeatureVisualizationMethod(Objective):

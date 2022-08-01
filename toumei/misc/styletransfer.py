@@ -163,7 +163,7 @@ class ActivationDifference(obj.Atom):
         return self.attached_model
 
 
-class StyleTransfer(toumei.general.FeatureVisualizationMethod):
+class StyleTransfer(toumei.parents.FeatureVisualizationMethod):
     """
     A custom objective for style transfer using InceptionV1
     """

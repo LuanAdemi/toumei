@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 
-from toumei.general import DatasetFinder
+from toumei.cnns.featurevis.dataset_finder import DatasetFinder
 
 import matplotlib.gridspec as gridspec
 

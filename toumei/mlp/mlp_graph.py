@@ -1,6 +1,6 @@
 import itertools
 
-from toumei.general.model_graph import ModelGraph
+from toumei.parents.model_graph import ModelGraph
 
 
 def peek(it):

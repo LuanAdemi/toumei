@@ -1,6 +1,6 @@
 import torch.linalg
 
-from toumei.general.model_graph import ModelGraph
+from toumei.parents.model_graph import ModelGraph
 import itertools
 
 def peek(it):

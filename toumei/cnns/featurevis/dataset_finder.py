@@ -1,5 +1,5 @@
 from toumei.cnns.featurevis.objectives.utils import freeze_model, unfreeze_model
-from toumei.general.objective import Objective
+from toumei.parents.objective import Objective
 from torch.utils.data import Dataset, DataLoader
 
 import torch.nn as nn

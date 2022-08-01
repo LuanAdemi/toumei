@@ -1,4 +1,4 @@
-from toumei.general.feature_attribution_method import FeatureAttributionMethod
+from toumei.parents.feature_attribution_method import FeatureAttributionMethod
 
 
 class LIMEFeatureAttribution(FeatureAttributionMethod):
