@@ -1,4 +1,4 @@
-from toumei.cnns.objectives.utils import freeze_model, unfreeze_model
+from toumei.cnns.featurevis.objectives.utils import freeze_model, unfreeze_model
 from toumei.general.objective import Objective
 from torch.utils.data import Dataset, DataLoader
 

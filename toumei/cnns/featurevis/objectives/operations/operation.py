@@ -2,7 +2,7 @@ import torch
 
 import torch.nn as nn
 
-from toumei.cnns.objectives.atoms import Atom
+from toumei.cnns.featurevis.objectives.atoms import Atom
 
 
 class Operation(Atom):

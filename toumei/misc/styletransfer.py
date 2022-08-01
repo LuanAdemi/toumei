@@ -5,11 +5,13 @@ import torchvision.transforms as T
 import tqdm
 
 import toumei
-import toumei.cnns.objectives as obj
-import toumei.cnns.parameterization as param
+import toumei.cnns.featurevis.objectives as obj
+import toumei.cnns.featurevis.parameterization as param
 
 from toumei.models import Inception5h
-from toumei.cnns.objectives.utils import freeze_model
+from toumei.cnns.featurevis.objectives.utils import freeze_model
+
+from toumei.cnns.featurevis.parameterization.imagegenerator import ImageGenerator
 
 # standard layers for the style transfer
 standard_style_layers = [
@@ -41,7 +43,7 @@ def gram_matrix(features, normalize=True):
     return gram
 
 
-class StyleTransferParam(param.ImageGenerator):
+class StyleTransferParam(ImageGenerator):
     """
     A ImageGenerator for style transfer.
     It uses a FFTImage generator under the hood and exposes its parameters.
@@ -219,7 +221,7 @@ class StyleTransfer(toumei.general.FeatureVisualizationMethod):
         self.model.to(self.device)
 
     @property
-    def generator(self) -> param.ImageGenerator:
+    def generator(self) -> ImageGenerator:
         return self.param
 
     def forward(self) -> torch.Tensor:

@@ -1,6 +1,6 @@
 import torch
 
-from toumei.cnns.parameterization import ImageGenerator
+from toumei.cnns.featurevis.parameterization.imagegenerator import ImageGenerator
 
 
 class PixelImage(ImageGenerator):

@@ -5,7 +5,7 @@ import torch
 from torch.nn import Parameter
 
 from toumei.models import Generator
-from toumei.cnns.parameterization.imagegenerator import ImageGenerator
+from toumei.cnns.featurevis.parameterization import ImageGenerator
 
 
 # might not be needed

@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from toumei.cnns.objectives.utils import freeze_model
+from toumei.cnns.featurevis.objectives.utils import freeze_model
 
 from tqdm import trange
 

@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
 
-from toumei.cnns.objectives.utils import freeze_model, unfreeze_model
-from toumei.cnns.objectives.atoms import Atom
+from toumei.cnns.featurevis.objectives.utils import freeze_model, unfreeze_model
+from toumei.cnns.featurevis.objectives.atoms import Atom
 from toumei.general.feature_visualization_method import FeatureVisualizationMethod
-from toumei.cnns.parameterization import ImageGenerator
+from toumei.cnns.featurevis.parameterization.imagegenerator import ImageGenerator
 
 
 class Pipeline(FeatureVisualizationMethod):

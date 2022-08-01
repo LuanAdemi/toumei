@@ -4,7 +4,7 @@ from PIL import Image
 import sys
 
 from toumei.misc import StyleTransfer
-from toumei.cnns.objectives.utils import set_seed
+from toumei.cnns.featurevis.objectives.utils import set_seed
 
 sys.path.append("../")
 

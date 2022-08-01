@@ -1,9 +1,8 @@
 import sys
 
-sys.path.append("../")
 from toumei.models import SimpleMLP
-from toumei.misc import MLPGraph
-from toumei.cnns.objectives.utils import set_seed
+from toumei.mlp import MLPGraph
+from toumei.cnns.featurevis.objectives.utils import set_seed
 
 
 def test_mlp_modularity():

@@ -1,16 +1,16 @@
 import torch
 
-from toumei.cnns.objectives.operations.operation import Operation
+from toumei.cnns.featurevis.objectives.operations.operation import Operation
 
 
-class Multiply(Operation):
+class Add(Operation):
     def __init__(self, *args):
-        super(Multiply, self).__init__()
+        super(Add, self).__init__()
         self.atoms = args
 
     def forward(self, *args) -> torch.Tensor:
         result = self.atoms[0]()
         for atom in self.atoms[0:]:
-            result = torch.mul(result, atom())
+            result = torch.add(result, atom())
 
         return result

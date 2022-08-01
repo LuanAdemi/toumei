@@ -1,6 +1,6 @@
 import torch
 
-from toumei.cnns.objectives.atoms.atom import Atom
+from toumei.cnns.featurevis.objectives.atoms.atom import Atom
 
 
 class TargetWrapper(Atom):

@@ -5,7 +5,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from toumei.transformers.rome.tracing import CausalTracer
-from toumei.cnns.objectives.utils import set_seed
+from toumei.cnns.featurevis.objectives.utils import set_seed
 
 sys.path.append("../")
 

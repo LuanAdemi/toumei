@@ -1,4 +1,4 @@
-from toumei.misc import MLPGraph
+from toumei.mlp import MLPGraph
 from toumei.models import SimpleMLP
 
 model = SimpleMLP(4, 4)

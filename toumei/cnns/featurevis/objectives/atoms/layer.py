@@ -1,17 +1,17 @@
 import torch
 
-from toumei.cnns.objectives.atoms.atom import Atom
-from toumei.cnns.objectives.utils import convert_unit_string
+from toumei.cnns.featurevis.objectives.atoms.atom import Atom
+from toumei.cnns.featurevis.objectives.utils import convert_unit_string
 
 
-class Channel(Atom):
+class Layer(Atom):
     """
-    The channel objective.
-    This objective optimizes the activation of a whole channel
+    The layer objective.
+    This objective optimizes the activation of a whole layer.
     """
     def __init__(self, unit: str):
         """
-        Initializes a new Channel objective atom
+        Initializes a new Layer objective atom
 
         :param unit: the unit of the objective
         """
@@ -21,22 +21,21 @@ class Channel(Atom):
         self.layer = self.identifiers[0]
 
         # check if the unit string is valid
-        if len(self.identifiers) != 2:
+        if len(self.identifiers) != 1:
             raise Exception(f"{unit} is not a valid unit string for the layer objective.")
 
-        # init a new atom
-        super(Channel, self).__init__(unit, self.layer)
-
-    @property
-    def name(self):
-        return "Channel"
+        super(Layer, self).__init__(unit, self.layer)
 
     def forward(self, *args, **kwargs) -> torch.Tensor:
         """
-        The forward function for the channel objective
+        The forward function for the layer objective
 
         :param args: the arguments
         :param kwargs: the keyword arguments
         :return: the channel objective tensor
         """
-        return -self.activation[self.identifiers[1]].mean()
+        return -self.activation.mean()
+
+    @property
+    def name(self):
+        return "Layer"

@@ -4,7 +4,7 @@ from toumei.models import Inception5h
 
 # import toumei
 import toumei.cnns.objectives as obj
-import toumei.cnns.parameterization as param
+import toumei.cnns.featurevis.parameterization as param
 
 from toumei.cnns.objectives.utils import set_seed
 

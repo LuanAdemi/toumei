@@ -1,4 +1,4 @@
-from toumei.cnns.parameterization import ImageGenerator
+from toumei.cnns.featurevis.parameterization.imagegenerator import ImageGenerator
 import torch
 import torchvision.transforms as T
 
