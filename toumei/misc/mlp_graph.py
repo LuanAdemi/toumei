@@ -26,6 +26,22 @@ class MLPGraph(ModelGraph):
     def __str__(self):
         return f"MLPGraph()"
 
+    def _get_weights(self):
+        """
+        Retrieve the weights from the model and pack them into a dictionary
+
+        :return: a dictionary containing the weights
+        """
+        named_params = self.model.named_parameters()
+
+        weights = {}
+
+        for (key, value) in named_params:
+            if 'weight' in key and 'fc' in key:
+                weights[key] = value
+
+        return weights
+
     def _build_graph(self):
         """
         Iteratively build the graph from the MLP using the weight matrices

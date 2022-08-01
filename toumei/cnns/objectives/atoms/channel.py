@@ -17,12 +17,15 @@ class Channel(Atom):
         """
         self.identifiers = convert_unit_string(unit)
 
+        self.unit = unit
+        self.layer = self.identifiers[0]
+
         # check if the unit string is valid
         if len(self.identifiers) != 2:
             raise Exception(f"{unit} is not a valid unit string for the layer objective.")
 
         # init a new atom
-        super(Channel, self).__init__(unit, self.identifiers[0])
+        super(Channel, self).__init__(unit, self.layer)
 
     @property
     def name(self):

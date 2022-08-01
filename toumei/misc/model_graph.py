@@ -81,7 +81,8 @@ class ModelGraph(nx.Graph):
 
         :return: the model modularity
         """
-        self.__class__ = nx.Graph
+        if method != "spectral":
+            self.__class__ = nx.Graph
 
         if method == "spectral":
             """

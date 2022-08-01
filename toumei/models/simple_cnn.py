@@ -1,25 +1,38 @@
-import torch
 import torch.nn as nn
+
+from toumei.models.helper_layers import RedirectedReluLayer
 
 
 class SimpleCNN(nn.Module):
-    def __init__(self, in_chn, out_chn):
+    def __init__(self, in_chn, out_chn, redirected_relu=False):
         super(SimpleCNN, self).__init__()
 
-        self.conv1 = nn.Conv2d(in_channels=in_chn, out_channels=10, kernel_size=5, stride=1, padding=0, bias=True)
+        if redirected_relu:
+            act = RedirectedReluLayer
+        else:
+            act = nn.ReLU
+
+        self.conv1 = nn.Conv2d(in_channels=in_chn, out_channels=32, kernel_size=3, stride=1, padding=0, bias=True)
         self.pool1 = nn.MaxPool2d(2)
-        self.relu1 = nn.ReLU(True)
+        self.relu1 = act()
 
-        self.conv2 = nn.Conv2d(in_channels=10, out_channels=20, kernel_size=5, stride=1, padding=0, bias=True)
+        self.conv2 = nn.Conv2d(in_channels=32, out_channels=8, kernel_size=3, stride=1, padding=0, bias=True)
         self.pool2 = nn.MaxPool2d(2)
-        self.relu2 = nn.ReLU(True)
+        self.relu2 = act()
 
-        self.adaptive_pool = nn.AdaptiveAvgPool2d((4, 4))
+        self.adaptive_pool = nn.AdaptiveAvgPool2d((8, 8))
 
-        self.fc1 = nn.Linear(in_features=320, out_features=50, bias=True)
-        self.relu_fc1 = nn.ReLU(True)
+        self.fc1 = nn.Linear(in_features=512, out_features=32, bias=True)
+        self.relu_fc1 = act()
 
-        self.fc2 = nn.Linear(in_features=50, out_features=out_chn, bias=True)
+        self.fc2 = nn.Linear(in_features=32, out_features=16, bias=True)
+        self.relu_fc2 = act()
+
+        self.fc3 = nn.Linear(in_features=16, out_features=8, bias=True)
+        self.relu_fc3 = act()
+
+        self.fc4 = nn.Linear(in_features=8, out_features=out_chn, bias=True)
+
 
     def forward(self, x):
         # perform the usual forward pass
@@ -29,9 +42,11 @@ class SimpleCNN(nn.Module):
 
         x = self.adaptive_pool(x)
 
-        x = x.view(-1, 320)
+        x = x.view(-1, 512)
 
         x = self.relu_fc1(self.fc1(x))
-        x = self.fc2(x)
+        x = self.relu_fc2(self.fc2(x))
+        x = self.relu_fc3(self.fc3(x))
 
-        return x
+        return self.fc4(x)
+

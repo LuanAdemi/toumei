@@ -14,7 +14,7 @@ def number_to_tensor(n: int):
 
 device = torch.device("cuda")
 
-model = SimpleMLP(20, 4, 1).to(device)
+model = SimpleMLP(4, 2, 1).to(device)
 loss_fc = torch.nn.MSELoss()
 opt = torch.optim.Adam(lr=0.001, params=model.parameters())
 

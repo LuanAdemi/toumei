@@ -9,5 +9,5 @@ __all__ = [
     "PixelImage",
     "Transform",
     "Neural",
-    "ImageGenerator"
+    "ImageGenerator",
 ]

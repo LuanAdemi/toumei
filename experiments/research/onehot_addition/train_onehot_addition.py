@@ -55,4 +55,3 @@ for i in range(ep):
 x1 = np.linspace(1, len(global_losses), num=len(global_losses))
 plt.plot(x1, global_losses)
 plt.show()
-
