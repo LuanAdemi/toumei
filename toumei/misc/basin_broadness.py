@@ -8,6 +8,8 @@ from torch.optim import Adam
 
 import seaborn as sns
 
+import tqdm
+
 
 class BasinVolumeMeasurer(object):
     def __init__(self, model, data):
@@ -19,6 +21,17 @@ class BasinVolumeMeasurer(object):
         return self.model(self.data)
 
     def calculate_inner_products(self):
+        """
+        Calculates the L2 inner products of the features over the training set.
+
+        This is done by computing the right term of the hessian decomposition.
+        We first build the computation graph by performing a full batch forward pass,
+        then accumulating the gradients df(x,θ)/dθ for every x.
+
+        The final matrix is build by calculating the corresponding dot products.
+
+        :return: the l2 inner product matrix
+        """
         out = self.forward_pass()
         n, outdim = out.shape
         p_size = len(self.parameters)
@@ -30,8 +43,7 @@ class BasinVolumeMeasurer(object):
             out[i].backward(retain_graph=True)
             p_grad = torch.tensor([], requires_grad=False)
             for p in self.model.parameters():
-                # df(x,θ)/dθ
-                p_grad = torch.cat((p_grad, p.grad.reshape(-1)))
+                p_grad = torch.cat((p_grad, p.grad.reshape(-1)))  # df(x,θ)/dθ
             grads.append(p_grad)
 
         grads = torch.stack(grads)
@@ -39,12 +51,20 @@ class BasinVolumeMeasurer(object):
 
         for j in range(len(self.parameters)):
             for k in range(len(self.parameters)):
+                """
+                Computes the dot product for 1D tensors. 
+                For higher dimensions, sums the product of elements from input 
+                and other along their last dimension.
+                """
                 inner_products[j, k] = torch.inner(grads[:, j], grads[:, k])
 
         return inner_products
 
 
 class DummyModel(nn.Module):
+    """
+    The little example presented in the document
+    """
     def __init__(self):
         super(DummyModel, self).__init__()
 
@@ -92,7 +112,7 @@ def trainOrModel():
     optimizer = Adam(params=model.parameters(), lr=3e-3)
     loss_func = nn.MSELoss()
 
-    for i in range(5000):
+    for i in tqdm.trange(5000):
         for (inp, labels) in dataloader:
             out = model(inp)
             loss = loss_func(out, labels.float())
@@ -108,6 +128,6 @@ if __name__ == '__main__':
     model, inputs = trainOrModel()
     measurer = BasinVolumeMeasurer(model, inputs)
     inner_products = measurer.calculate_inner_products()
-    sns.heatmap(data=inner_products)
+    sns.heatmap(data=inner_products, square=True)
     plt.show()
 
