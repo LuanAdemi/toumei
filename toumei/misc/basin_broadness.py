@@ -2,17 +2,12 @@ import torch
 import torch.nn as nn
 from torch import autograd
 
-from torch.utils.data import Dataset, DataLoader
-from torch.optim import Adam
-
-import tqdm
-
 
 class BasinVolumeMeasurer(object):
     """
     A class implementing some ideas of the document on basin broadness.
 
-    WARNING: Advanced math incoming.
+    WARNING: Advanced math and autograd usage incoming.
     """
     def __init__(self, model, inputs, labels, loss_func=nn.MSELoss()):
         self.model = model
@@ -165,56 +160,7 @@ class DummyModel(nn.Module):
         self.param = nn.Parameter(torch.tensor([1, 1, 1], dtype=torch.float))
 
     def forward(self, z):
-        return self.param[0] + self.param[1] * z + self.param[2] * z
-
-
-class Model(nn.Module):
-    def __init__(self):
-        super(Model, self).__init__()
-
-        self.fc1 = nn.Linear(2, 1)
-        self.activation = nn.Sigmoid()
-
-    def forward(self, x):
-        return self.activation(self.fc1(x))
-
-
-class OrDataset(Dataset):
-    def __init__(self):
-        self.data = []
-        self.labels = []
-
-        self.data = [[0., 0.], [0., 1.], [1., 0.], [1., 1.]]
-        self.labels = [[0.], [1.], [1.], [1.]]
-
-        self.data = torch.tensor(self.data)
-        self.labels = torch.tensor(self.labels)
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, item):
-        return self.data[item], self.labels[item]
-
-
-def trainOrModel():
-    model = Model()
-    dataset = OrDataset()
-    dataloader = DataLoader(dataset, batch_size=1)
-
-    optimizer = Adam(params=model.parameters(), lr=3e-3)
-    loss_func = nn.MSELoss()
-
-    for i in tqdm.trange(5000):
-        for (inp, labels) in dataloader:
-            out = model(inp)
-            loss = loss_func(out, labels.float())
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-    print(loss.item())
-
-    return model, dataset.data
+        return self.param[0] + self.param[1] * z + self.param[2] * torch.cos(z)
 
 
 if __name__ == '__main__':
@@ -222,7 +168,6 @@ if __name__ == '__main__':
     inputs = torch.tensor([[0.], [1.], [2.], [3.], [4.], [5.], [6.]], dtype=torch.float)
     labels = model(inputs)
     measurer = BasinVolumeMeasurer(model, inputs, labels)
-    print(measurer.calculate_inner_product_matrix())
     V, D, V_inv = measurer.get_hessian_eig_decomposition()
     print(D)
     print(measurer.unique_features())
