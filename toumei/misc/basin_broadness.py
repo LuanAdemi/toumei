@@ -49,16 +49,11 @@ class BasinVolumeMeasurer(object):
         # first derivative
         dl_df = autograd.grad(loss, output, create_graph=True)[0]
 
-        d2l_d2f = []
-
-        # iterate over every gradient of the first derivative
-        for i, (grad, out) in enumerate(zip(dl_df, output)):
-            # second derivative
-            drv = autograd.grad(grad, output, create_graph=True)[0].view(-1)
-            d2l_d2f.append(drv[i])
+        # calculate the second derivative for one output (this should algebraically be the same for every output)
+        d2l_d2f = autograd.grad(dl_df[0], output, create_graph=True)[0].view(-1)[0]
 
         # return the first element, since every entry is the same
-        return d2l_d2f[0]
+        return d2l_d2f
 
     def calculate_inner_product_matrix(self):
         """
