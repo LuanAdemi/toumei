@@ -40,7 +40,7 @@ class BasinVolumeMeasurer(object):
 
     def calculate_d2l_d2f(self):
         """
-        Calculates the first term of the hessian decomposition
+        Calculates the first term of the hessian decomposition.
 
         :return: the corresponding gradient
         """
@@ -49,10 +49,9 @@ class BasinVolumeMeasurer(object):
         # first derivative
         dl_df = autograd.grad(loss, output, create_graph=True)[0]
 
-        # calculate the second derivative for one output (this should algebraically be the same for every output)
+        # second derivative for one output (this should algebraically be the same for every output)
         d2l_d2f = autograd.grad(dl_df[0], output, create_graph=True)[0].view(-1)[0]
 
-        # return the first element, since every entry is the same
         return d2l_d2f
 
     def calculate_inner_product_matrix(self):
@@ -154,7 +153,7 @@ class BasinVolumeMeasurer(object):
         The autograd system will not yield perfect gradients or eigenvalues,
         since it has some numerical instability to it.
 
-        In some cases this can result into having eigenvalues that are not quite zero,
+        In some cases this can result in having eigenvalues that are not quite zero,
         even though this might algebraically be the case. This is fixed by letting the matrix rank
         computation have a threshold for just viewing entries as zero.
 
@@ -177,13 +176,13 @@ class DummyModel(nn.Module):
         # these are the parameters of the model
         self.param = nn.Parameter(torch.randn(size=(4,), dtype=torch.float))
 
-    def forward(self, z):
-        return self.param[0] + self.param[1] * z + self.param[2] * torch.cos(z) + self.param[3] * torch.pow(z, 2)
+    def forward(self, x):
+        return self.param[0] + self.param[1] * x + self.param[2] * torch.cos(x) + self.param[3] * torch.pow(x, 2)
 
 
 if __name__ == '__main__':
     model = DummyModel()
-    inputs = torch.randn(size=(32, 1), dtype=torch.float)
+    inputs = torch.randn(size=(512, 1), dtype=torch.float)
     labels = model(inputs)
     measurer = BasinVolumeMeasurer(model, inputs, labels)
     V, D, V_inv = measurer.get_hessian_eig_decomposition()
