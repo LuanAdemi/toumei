@@ -5,9 +5,14 @@ from torch import autograd
 
 class BasinVolumeMeasurer(object):
     """
-    A class implementing some ideas of the document on basin broadness.
+    A class implementing the ideas presented in the document on basin broadness.
 
-    WARNING: Advanced math and autograd usage incoming.
+    This makes a lot of assumptions like the model having perfect loss to create a setting where
+    we can easily construct a second order taylor expansion to linearize our model.
+
+    In a more practical case, this serves more as an approximation.
+
+    WARNING: Advanced math and autograd shenanigans incoming.
     """
     def __init__(self, model, inputs, labels, loss_func=nn.MSELoss()):
         self.model = model
@@ -67,7 +72,9 @@ class BasinVolumeMeasurer(object):
 
         :return: the l2 inner product matrix
         """
+        # perform a forward pass
         out = self.forward_pass()
+
         n, outdim = out.shape
         p_size = len(self.parameters)
 
@@ -83,7 +90,7 @@ class BasinVolumeMeasurer(object):
 
             # iterate over every model parameter
             for p in self.model.parameters():
-                grad = p.grad # df(x,θ)/dθ
+                grad = p.grad  # df(x,θ)/dθ
                 p_grad = torch.cat((p_grad, grad.reshape(-1)))  # append the gradient
             grads.append(p_grad)
 
@@ -131,9 +138,13 @@ class BasinVolumeMeasurer(object):
 
         :return: V, diag(L), V^-1
         """
+        # compute the eigenvalues and the eigenvectors of the hessian
         l, v = torch.linalg.eig(self.calculate_hessian())
-        # the inverse of the eigenvector space
+
+        # the inverse of the basis shift matrix
         v_inverse = torch.linalg.inv(v)
+
+        # the resulting diagonal matrix with the eigenvalues on the diagonal
         diag = torch.diag(l)
 
         return v, diag, v_inverse
@@ -141,7 +152,19 @@ class BasinVolumeMeasurer(object):
     def unique_features(self):
         """
         Returns the amount of unique features the model has.
-        This is equal to the matrix rank of diag(L).
+        This is equal to the rank of diag(L).
+
+        NOTE:
+
+        The autograd system will not yield perfect gradients or eigenvalues,
+        since it has some numerical instability to it.
+
+        In some cases this can result into having eigenvalues that are not quite zero,
+        even though this might algebraically be the case. This is fixed by letting the matrix rank
+        computation have a threshold for just viewing entries as zero.
+
+        It is perfectly normal if the calculated rank of the matrix is smaller than it seems when looking at
+        the matrix directly.
 
         :return: The amount of unique features the model has
         """
@@ -156,19 +179,18 @@ class DummyModel(nn.Module):
     def __init__(self):
         super(DummyModel, self).__init__()
 
-        # these are the parameters for optimization
-        self.param = nn.Parameter(torch.tensor([1, 1, 1], dtype=torch.float))
+        # these are the parameters of the model
+        self.param = nn.Parameter(torch.randn(size=(4,), dtype=torch.float))
 
     def forward(self, z):
-        return self.param[0] + self.param[1] * z + self.param[2] * torch.cos(z)
+        return self.param[0] + self.param[1] * z + self.param[2] * torch.cos(z) + self.param[3] * torch.pow(z, 2)
 
 
 if __name__ == '__main__':
     model = DummyModel()
-    inputs = torch.tensor([[0.], [1.], [2.], [3.], [4.], [5.], [6.]], dtype=torch.float)
+    inputs = torch.randn(size=(32, 1), dtype=torch.float)
     labels = model(inputs)
     measurer = BasinVolumeMeasurer(model, inputs, labels)
     V, D, V_inv = measurer.get_hessian_eig_decomposition()
     print(D)
     print(measurer.unique_features())
-
