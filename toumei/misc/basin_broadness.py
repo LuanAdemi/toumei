@@ -6,15 +6,17 @@ from torch import autograd
 from torch.nn import Parameter
 
 from toumei.models import SimpleMLP
+from toumei.probe import print_modules
 
 
 class LinearNode(nn.Module):
     """
     Wraps a linear layer and adds functionality to it
     """
-    def __init__(self, parent: nn.Module, child: nn.Module, prv: nn.Module = None):
+    def __init__(self, name: str, parent: nn.Module, child: nn.Module, prv: nn.Module = None):
         super(LinearNode, self).__init__()
 
+        self.name = name
         self.parent = parent
         self.child = child
 
@@ -27,6 +29,10 @@ class LinearNode(nn.Module):
         return self.child.forward(x)
 
     def forward_pass(self):
+        """
+        Performs a forward call by making a recursive calls to all previous nodes
+        :return: the hidden state of this node
+        """
         if self.prev is not None:
             return self.forward(self.prev.forward_pass())
         else:
@@ -176,6 +182,9 @@ class LinearNode(nn.Module):
 
 
 class MLPWrapper(nn.Module):
+    """
+    Implements a linked list like structure
+    """
     def __init__(self, model: nn.Module, x: torch.Tensor, y: torch.Tensor, loss_func=nn.MSELoss()):
         super(MLPWrapper, self).__init__()
 
@@ -188,22 +197,37 @@ class MLPWrapper(nn.Module):
         self.nodes = []
 
         prev = None
+
         for key, value in self.model.named_modules():
-            if type(value) == nn.Linear:
-                print(key)
-                node = LinearNode(self, value, prev)
+            if isinstance(value, nn.Linear):
+                node = LinearNode(key, self, value, prev)
                 self.nodes.append(node)
                 prev = node
 
+        self.key_to_idx = {n.name: i for i, n in enumerate(self.nodes)}
+
     def forward(self):
+        """
+        Makes a recursive call with the last element in the linked list of the nodes
+        :return: the model output
+        """
         return self.nodes[-1].forward_pass()
 
     def forward_pass(self):
+        """
+        Performs a forward pass
+        :return: the model output and the loss
+        """
         out = self.forward()
         loss = self.loss_func(out, self.Y)
         return out, loss
 
     def intercepted_forward_pass(self, node):
+        """
+        Intercepts the forward pass at the specified node and extracts the hidden state
+        :param node: the node where the forward pass should be intercepted
+        :return: the hidden state and the loss
+        """
         n = self.nodes.index(node)
         n_out = self.nodes[n].forward_pass()
 
@@ -214,12 +238,18 @@ class MLPWrapper(nn.Module):
         loss = self.loss_func(out, self.Y)
         return n_out, loss
 
+    def __getitem__(self, item):
+        if isinstance(item, str):
+            return self.nodes[self.key_to_idx[item]]
+        else:
+            return self.nodes[item]
+
 
 if __name__ == '__main__':
-    model = SimpleMLP(8, 16, 8, 4, 2, 1)
-    inputs = torch.randn(size=(512, 8), dtype=torch.float)
+    model = SimpleMLP(16, 8, 4, 2, 1)
+    inputs = torch.randn(size=(512, 16), dtype=torch.float)
     labels = model(inputs)
     w = MLPWrapper(model, inputs, labels)
-    v, d, t = w.nodes[1].hessian_eig_decomposition
-    print(w.nodes[1].inner_products)
-    print(w.nodes[1].unique_features)
+    print_modules(w.model)
+    print(w['fc2'].inner_products)
+    print(w['fc2'].unique_features)
