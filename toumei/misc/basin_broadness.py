@@ -1,60 +1,60 @@
+from collections.abc import Iterator
+
 import torch
 import torch.nn as nn
 from torch import autograd
+from torch.nn import Parameter
+
+from toumei.models import SimpleMLP
 
 
-class BasinVolumeMeasurer(object):
+class LinearNode(nn.Module):
     """
-    A class implementing the ideas presented in the document on basin broadness.
-
-    This makes a lot of assumptions like the model having perfect loss to create a setting where
-    we can easily construct a second order taylor expansion to linearize our model.
-
-    In a more practical case, this serves more as an approximation.
-
-    WARNING: Advanced math and autograd shenanigans incoming.
+    Wraps a linear layer and adds functionality to it
     """
-    def __init__(self, model, inputs, labels, loss_func=nn.MSELoss()):
-        self.model = model
-        self.parameters = nn.utils.parameters_to_vector(model.parameters())
-        self.inputs = inputs
-        self.labels = labels
-        self.loss_func = loss_func
+    def __init__(self, parent: nn.Module, child: nn.Module, prv: nn.Module = None):
+        super(LinearNode, self).__init__()
+
+        self.parent = parent
+        self.child = child
+
+        self.prev = prv
+
+    def parameters(self, recurse: bool = True) -> Iterator[Parameter]:
+        return self.child.parameters()
+
+    def forward(self, x):
+        return self.child.forward(x)
 
     def forward_pass(self):
-        """
-        Performs a forward pass
+        if self.prev is not None:
+            return self.forward(self.prev.forward_pass())
+        else:
+            return self.forward(self.parent.X)
 
-        :return: the model output
-        """
-        return self.model(self.inputs)
+    @property
+    def weights(self):
+        return next(self.parameters())
 
-    def get_loss(self):
-        """
-        Performs a forward pass and calculates the loss
-
-        :return: the model output and the loss
-        """
-        out = self.forward_pass()
-        return out, self.loss_func(out, self.labels)
-
-    def calculate_d2l_d2f(self):
+    @property
+    def d2l_d2f(self):
         """
         Calculates the first term of the hessian decomposition.
 
         :return: the corresponding gradient
         """
-        output, loss = self.get_loss()
+        n_out, loss = self.parent.intercepted_forward_pass(self)
 
         # first derivative
-        dl_df = autograd.grad(loss, output, create_graph=True)[0]
+        dl_df = autograd.grad(loss, n_out, create_graph=True)[0]
 
         # second derivative for one output (this should algebraically be the same for every output)
-        d2l_d2f = autograd.grad(dl_df[0], output, create_graph=True)[0].view(-1)[0]
+        d2l_d2f = autograd.grad(dl_df[0][0], n_out, create_graph=True)[0].view(-1)[0]
 
         return d2l_d2f
 
-    def calculate_inner_product_matrix(self):
+    @property
+    def inner_products(self):
         """
         Calculates the L2 inner products of the features over the training set.
 
@@ -70,57 +70,65 @@ class BasinVolumeMeasurer(object):
         out = self.forward_pass()
 
         n, outdim = out.shape
-        p_size = len(self.parameters)
+        p_size = len(self.weights)
 
         grads = []
 
-        for i in range(n):
-            # clear gradients from previous iteration
-            self.model.zero_grad()
+        for o in out.T:
+            g = []
+            for i in range(n):
+                # clear gradients from previous iteration
+                self.parent.model.zero_grad()
 
-            # build the autograd graph
-            out[i].backward(retain_graph=True)
-            p_grad = torch.tensor([], requires_grad=False)
+                # build the autograd graph
+                o[i].backward(retain_graph=True)
 
-            # iterate over every model parameter
-            for p in self.model.parameters():
-                grad = p.grad  # df(x,θ)/dθ
-                p_grad = torch.cat((p_grad, grad.reshape(-1)))  # append the gradient
-            grads.append(p_grad)
+                # df(x,θ)/dθ
+                g.append(self.weights.grad.view(-1))
 
-        grads = torch.stack(grads)
+            grads.append(torch.stack(g))
+
+        gradients = torch.zeros_like(grads[0])
+
+        # cumulate the gradients
+        for g in grads:
+            gradients += g
+
         inner_products = torch.zeros(size=(p_size, p_size))
 
         # build the l2 inner product matrix (feature orthogonality matrix)
-        for j in range(len(self.parameters)):
-            for k in range(len(self.parameters)):
+        for j in range(len(self.weights)):
+            for k in range(len(self.weights)):
                 """
                 Computes the dot product for 1D tensors. 
                 For higher dimensions, sums the product of elements from input 
                 and other along their last dimension.
                 """
-                inner_products[j, k] = torch.inner(grads[:, j], grads[:, k])
+                inner_products[j, k] = torch.inner(gradients[:, j], gradients[:, k])
 
         return inner_products
 
-    def calculate_hessian(self):
+    @property
+    def hessian(self):
         """
         Calculates the hessian by multiplying the two terms of the decomposition.
 
         :return: the hessian matrix of the model
         """
-        return self.calculate_d2l_d2f() * self.calculate_inner_product_matrix()
+        return self.d2l_d2f * self.inner_products
 
-    def get_hessian_eigvals(self):
+    @property
+    def hessian_eigenvalues(self):
         """
         Returns the eigenvalues of the hessian by computing the
         eigenvalue decomposition.
 
         :return: the eigenvalues and eigenvectors of the model hessian
         """
-        return torch.linalg.eigvals(self.calculate_hessian())
+        return torch.linalg.eigvals(self.hessian)
 
-    def get_hessian_eig_decomposition(self):
+    @property
+    def hessian_eig_decomposition(self):
         """
         Returns the eigenvalue decomposition of the hessian matrix
 
@@ -133,7 +141,7 @@ class BasinVolumeMeasurer(object):
         :return: V, diag(L), V^-1
         """
         # compute the eigenvalues and the eigenvectors of the hessian
-        l, v = torch.linalg.eig(self.calculate_hessian())
+        l, v = torch.linalg.eig(self.hessian)
 
         # the inverse of the basis shift matrix
         v_inverse = torch.linalg.inv(v)
@@ -143,6 +151,7 @@ class BasinVolumeMeasurer(object):
 
         return v, diag, v_inverse
 
+    @property
     def unique_features(self):
         """
         Returns the amount of unique features the model has.
@@ -162,29 +171,55 @@ class BasinVolumeMeasurer(object):
 
         :return: The amount of unique features the model has
         """
-        _, D, _ = self.get_hessian_eig_decomposition()
+        _, D, _ = self.hessian_eig_decomposition
         return torch.linalg.matrix_rank(D).item()
 
 
-class DummyModel(nn.Module):
-    """
-    The little example presented in the document
-    """
-    def __init__(self):
-        super(DummyModel, self).__init__()
+class MLPWrapper(nn.Module):
+    def __init__(self, model: nn.Module, x: torch.Tensor, y: torch.Tensor, loss_func=nn.MSELoss()):
+        super(MLPWrapper, self).__init__()
 
-        # these are the parameters of the model
-        self.param = nn.Parameter(torch.randn(size=(4,), dtype=torch.float))
+        self.X = x
+        self.Y = y
+        self.loss_func = loss_func
 
-    def forward(self, x):
-        return self.param[0] + self.param[1] * x + self.param[2] * torch.cos(x) + self.param[3] * torch.pow(x, 2)
+        self.model = model
+
+        self.nodes = []
+
+        prev = None
+        for key, value in self.model.named_modules():
+            if type(value) == nn.Linear:
+                print(key)
+                node = LinearNode(self, value, prev)
+                self.nodes.append(node)
+                prev = node
+
+    def forward(self):
+        return self.nodes[-1].forward_pass()
+
+    def forward_pass(self):
+        out = self.forward()
+        loss = self.loss_func(out, self.Y)
+        return out, loss
+
+    def intercepted_forward_pass(self, node):
+        n = self.nodes.index(node)
+        n_out = self.nodes[n].forward_pass()
+
+        out = n_out
+        for node in self.nodes[n+1:]:
+            out = node(out)
+
+        loss = self.loss_func(out, self.Y)
+        return n_out, loss
 
 
 if __name__ == '__main__':
-    model = DummyModel()
-    inputs = torch.randn(size=(512, 1), dtype=torch.float)
+    model = SimpleMLP(8, 16, 8, 4, 2, 1)
+    inputs = torch.randn(size=(512, 8), dtype=torch.float)
     labels = model(inputs)
-    measurer = BasinVolumeMeasurer(model, inputs, labels)
-    V, D, V_inv = measurer.get_hessian_eig_decomposition()
-    print(D)
-    print(measurer.unique_features())
+    w = MLPWrapper(model, inputs, labels)
+    v, d, t = w.nodes[1].hessian_eig_decomposition
+    print(w.nodes[1].inner_products)
+    print(w.nodes[1].unique_features)
