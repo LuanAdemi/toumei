@@ -131,7 +131,7 @@ class LinearNode(nn.Module):
 
         :return: the eigenvalues and eigenvectors of the model hessian
         """
-        return torch.linalg.eigvals(self.hessian)
+        return torch.linalg.eigvals(self.hessian).real
 
     @property
     def hessian_eig_decomposition(self):
@@ -155,7 +155,7 @@ class LinearNode(nn.Module):
         # the resulting diagonal matrix with the eigenvalues on the diagonal
         diag = torch.diag(l)
 
-        return v, diag, v_inverse
+        return v.real, diag.real, v_inverse.real
 
     @property
     def unique_features(self):
@@ -251,5 +251,5 @@ if __name__ == '__main__':
     labels = model(inputs)
     w = MLPWrapper(model, inputs, labels)
     print_modules(w.model)
-    print(w['fc2'].inner_products)
+    print(w['fc2'].hessian_eigenvalues)
     print(w['fc2'].unique_features)
