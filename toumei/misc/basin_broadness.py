@@ -96,8 +96,8 @@ class LinearNode(nn.Module):
         This forces us to iterate over every scalar tensor in the output and reconstructing the
         gradients afterwards.
 
-        TODO: I see some ways to make this faster. The current time complexity of O(p_size^n^outdim + p_size^2)
-              can probably be reduced to something like O(k * p_size^n + p_size^2) due to the symmetry in the hessian
+        TODO: I see some ways to make this faster. The current time complexity of O(p_size * (outdim * n + p_size))
+              can probably be reduced to something like O(p_size * (n + p_size)) due to the symmetry in the hessian
 
         :return: the l2 inner product matrix
         """
