@@ -50,7 +50,7 @@ class LinearNode(nn.Module):
         if self.prev is not None:
             return self.forward(self.prev.forward_pass())
         else:
-            # this is the head node
+            # this is the tail node, so no preceding nodes exist
             return self.forward(self.parent.X)
 
     @property
@@ -95,6 +95,9 @@ class LinearNode(nn.Module):
         The pytorch autograd system can only compute the gradients of scalar leaf tensors.
         This forces us to iterate over every scalar tensor in the output and reconstructing the
         gradients afterwards.
+
+        TODO: I see some ways to make this faster. The current time complexity of O(p_size^n^outdim + p_size^2)
+              can probably be reduced to something like O(k * p_size^n + p_size^2) due to the symmetry in the hessian
 
         :return: the l2 inner product matrix
         """
