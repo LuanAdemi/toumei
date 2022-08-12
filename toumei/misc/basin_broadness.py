@@ -16,30 +16,49 @@ class LinearNode(nn.Module):
     def __init__(self, name: str, parent: nn.Module, child: nn.Module, prv: nn.Module = None):
         super(LinearNode, self).__init__()
 
+        # a node name (the name of the wrapped module)
         self.name = name
+
+        # the parent container
         self.parent = parent
+
+        # the wrapped linear layer
         self.child = child
 
+        # the preceding node
         self.prev = prv
+
+        # vectorized params
+        self.params = nn.utils.parameters_to_vector(self.parameters())
 
     def parameters(self, recurse: bool = True) -> Iterator[Parameter]:
         return self.child.parameters()
 
     def forward(self, x):
+        """
+        Forwards a tensor through the node
+        :param x: the input tensor
+        :return: the hidden state/output
+        """
         return self.child.forward(x)
 
     def forward_pass(self):
         """
-        Performs a forward call by making a recursive calls to all previous nodes
+        Performs a forward pass by making recursive calls to all previous nodes
         :return: the hidden state of this node
         """
         if self.prev is not None:
             return self.forward(self.prev.forward_pass())
         else:
+            # this is the head node
             return self.forward(self.parent.X)
 
     @property
     def weights(self):
+        """
+        The weights of the node
+        :return:
+        """
         return next(self.parameters())
 
     @property
@@ -49,6 +68,7 @@ class LinearNode(nn.Module):
 
         :return: the corresponding gradient
         """
+        # get the hidden state of the node and the overall loss
         n_out, loss = self.parent.intercepted_forward_pass(self)
 
         # first derivative
@@ -70,41 +90,56 @@ class LinearNode(nn.Module):
 
         The final matrix is build by calculating the corresponding dot products.
 
+        NOTE:
+
+        The pytorch autograd system can only compute the gradients of scalar leaf tensors.
+        This forces us to iterate over every scalar tensor in the output and reconstructing the
+        gradients afterwards.
+
         :return: the l2 inner product matrix
         """
         # perform a forward pass
         out = self.forward_pass()
 
         n, outdim = out.shape
-        p_size = len(self.weights)
+        p_size = len(self.params)
 
         grads = []
 
-        for o in out.T:
+        # iterate over the output dimension
+        for i in range(outdim):
             g = []
-            for i in range(n):
+            # iterate over the datapoints
+            for j in range(n):
                 # clear gradients from previous iteration
                 self.parent.model.zero_grad()
 
-                # build the autograd graph
-                o[i].backward(retain_graph=True)
+                # build the autograd graph (this populates the grad field)
+                out[j, i].backward(retain_graph=True)
 
-                # df(x,θ)/dθ
-                g.append(self.weights.grad.view(-1))
+                # df/dθ
+                p_grad = torch.tensor([], requires_grad=False)
+
+                # iterate over each parameter (e. g. weight and bias)
+                for p in self.parameters():
+                    # populate df/dθ
+                    p_grad = torch.cat([p_grad, p.grad.view(-1)])
+
+                g.append(p_grad)
 
             grads.append(torch.stack(g))
 
+        # reconstruct the gradients
         gradients = torch.zeros_like(grads[0])
 
-        # cumulate the gradients
         for g in grads:
             gradients += g
 
+        # build the l2 inner product matrix (feature orthogonality matrix)
         inner_products = torch.zeros(size=(p_size, p_size))
 
-        # build the l2 inner product matrix (feature orthogonality matrix)
-        for j in range(len(self.weights)):
-            for k in range(len(self.weights)):
+        for j in range(len(self.params)):
+            for k in range(len(self.params)):
                 """
                 Computes the dot product for 1D tensors. 
                 For higher dimensions, sums the product of elements from input 
@@ -183,19 +218,30 @@ class LinearNode(nn.Module):
 
 class MLPWrapper(nn.Module):
     """
-    Implements a linked list like structure
+    Implements a linked array list like structure.
+
+    Nodes (LinearLayers) are stored in a single linked array list and can be accessed dynamically.
+
+    A node has access to every preceding node, so it can dynamically build the computation graph.
     """
     def __init__(self, model: nn.Module, x: torch.Tensor, y: torch.Tensor, loss_func=nn.MSELoss()):
         super(MLPWrapper, self).__init__()
 
+        # the dataset and loss function
         self.X = x
         self.Y = y
         self.loss_func = loss_func
 
+        # the model
         self.model = model
 
+        # a container for the single linked array list
         self.nodes = []
 
+        # vectorized model parameters
+        self.params = nn.utils.parameters_to_vector(self.model.parameters())
+
+        # build the linked array list
         prev = None
 
         for key, value in self.model.named_modules():
@@ -204,6 +250,7 @@ class MLPWrapper(nn.Module):
                 self.nodes.append(node)
                 prev = node
 
+        # a dictionary mapping the node names to an integer index
         self.key_to_idx = {n.name: i for i, n in enumerate(self.nodes)}
 
     def forward(self):
@@ -228,17 +275,27 @@ class MLPWrapper(nn.Module):
         :param node: the node where the forward pass should be intercepted
         :return: the hidden state and the loss
         """
-        n = self.nodes.index(node)
-        n_out = self.nodes[n].forward_pass()
+
+        # retrieve the hidden state of the specified node
+        n_out = node.forward_pass()
 
         out = n_out
-        for node in self.nodes[n+1:]:
+
+        # continue the forward pass
+        for node in self.nodes[self.nodes.index(node)+1:]:
             out = node(out)
 
         loss = self.loss_func(out, self.Y)
         return n_out, loss
 
     def __getitem__(self, item):
+        """
+        Implements two types of indexing nodes.
+        1) by index
+        2) by name
+        :param item: an integer index or the node name
+        :return: the corresponding node
+        """
         if isinstance(item, str):
             return self.nodes[self.key_to_idx[item]]
         else:
@@ -246,10 +303,10 @@ class MLPWrapper(nn.Module):
 
 
 if __name__ == '__main__':
-    model = SimpleMLP(16, 8, 4, 2, 1)
-    inputs = torch.randn(size=(512, 16), dtype=torch.float)
+    model = SimpleMLP(8, 4, 2, 1)
+    inputs = torch.randn(size=(512, 8), dtype=torch.float) * 10
     labels = model(inputs)
     w = MLPWrapper(model, inputs, labels)
     print_modules(w.model)
-    print(w['fc2'].hessian_eigenvalues)
-    print(w['fc2'].unique_features)
+    print(w['fc1'].hessian)
+    print(w['fc1'].unique_features)
