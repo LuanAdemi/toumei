@@ -1,4 +1,5 @@
 from collections.abc import Iterator
+from copy import deepcopy
 
 import torch
 import torch.nn as nn
@@ -218,6 +219,15 @@ class LinearNode(nn.Module):
         _, D, _ = self.hessian_eig_decomposition
         return torch.linalg.matrix_rank(D).item()
 
+    @property
+    def orthogonal_basis(self):
+        v, d, v_inv = self.hessian_eig_decomposition
+        return v_inv
+
+    @property
+    def orthogonal_parameters(self):
+        return self.orthogonal_basis @ self.params
+
 
 class MLPWrapper(nn.Module):
     """
@@ -248,7 +258,7 @@ class MLPWrapper(nn.Module):
         prev = None
 
         for key, value in self.model.named_modules():
-            if isinstance(value, nn.Linear):
+            if isinstance(value, nn.Linear) or isinstance(value, DummyLayer):
                 node = LinearNode(key, self, value, prev)
                 self.nodes.append(node)
                 prev = node
@@ -291,6 +301,29 @@ class MLPWrapper(nn.Module):
         loss = self.loss_func(out, self.Y)
         return n_out, loss
 
+    def orthogonal_model(self):
+        """
+        This is the main algorithm.
+        It collects the orthogonal features of each node (layer) and builds the corresponding orthogonal model.
+
+        :return: the orthogonal model
+        """
+
+        ortho_model = deepcopy(self.model)
+
+        current_node = 0
+
+        # iterate over each module of the orthogonal model
+        for name, module in ortho_model.named_modules():
+            if isinstance(module, nn.Linear) or isinstance(module, DummyLayer):
+                # set the parameters to the orthogonal ones
+                ortho_param = self[current_node].orthogonal_parameters
+                nn.utils.vector_to_parameters(ortho_param, module.parameters())
+
+                current_node += 1
+
+        return ortho_model
+
     def __getitem__(self, item):
         """
         Implements two types of indexing nodes.
@@ -305,11 +338,33 @@ class MLPWrapper(nn.Module):
             return self.nodes[item]
 
 
+class DummyLayer(nn.Module):
+    def __init__(self):
+        super(DummyLayer, self).__init__()
+        self.params = nn.Parameter(torch.ones((3,), dtype=torch.float))
+
+    def forward(self, x):
+        return self.params[0] + self.params[1] * x + self.params[2] * x
+
+
+class DummyModel(nn.Module):
+    def __init__(self):
+        super(DummyModel, self).__init__()
+
+        self.dl = DummyLayer()
+
+    def forward(self, x):
+        return self.dl(x)
+
+
 if __name__ == '__main__':
-    model = SimpleMLP(8, 4, 2, 1)
-    inputs = torch.randn(size=(512, 8), dtype=torch.float) * 10
+    model = DummyModel()
+    #model = SimpleMLP(1, 2, 4, 2, 1)
+    inputs = torch.randn(size=(512, 1), dtype=torch.float) * 10
     labels = model(inputs)
     w = MLPWrapper(model, inputs, labels)
     print_modules(w.model)
-    print(w['fc1'].hessian)
-    print(w['fc1'].unique_features)
+    print(w[0].unique_features)
+    print(w[0].params)
+    print(w[0].orthogonal_parameters)
+    print(w.orthogonal_model())
