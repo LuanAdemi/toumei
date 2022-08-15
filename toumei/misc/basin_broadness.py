@@ -213,11 +213,23 @@ class LinearNode(nn.Module):
 
     @property
     def orthogonal_basis(self):
+        """
+        Returns the orthogonal (eigen) basis of the parameter space
+
+        :return: the orthogonal basis
+        """
         v, d, v_inv = self.hessian_eig_decomposition
         return v_inv
 
     @property
     def orthogonal_parameters(self):
+        """
+        Returns the orthogonal parameters.
+        These are computed by shifting the parameters into the eigen-basis of the hessian.
+
+        :return: the orthogonal parameters
+        """
+        # apply the basis shift matrix on the parameters
         return self.orthogonal_basis @ self.params
 
 
@@ -339,7 +351,7 @@ class DummyLayer(nn.Module):
         self.params = nn.Parameter(torch.ones((3,), dtype=torch.float))
 
     def forward(self, x):
-        return self.params[0] + self.params[1] * x + self.params[2] * x
+        return self.params[0] * x + self.params[1] * x + self.params[2] * x
 
 
 class DummyModel(nn.Module):
@@ -355,7 +367,7 @@ class DummyModel(nn.Module):
 if __name__ == '__main__':
     model = DummyModel()
     # model = SimpleMLP(1, 2, 4, 2, 1)
-    inputs = torch.randn(size=(512, 1), dtype=torch.float) * 10
+    inputs = torch.randn(size=(512, 1), dtype=torch.float)
     labels = model(inputs)
     w = MLPWrapper(model, inputs, labels)
     print_modules(w.model)
