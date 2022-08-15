@@ -17,7 +17,7 @@ class LinearNode(nn.Module):
     def __init__(self, name: str, parent: nn.Module, child: nn.Module, prv: nn.Module = None):
         super(LinearNode, self).__init__()
 
-        # a node name (the name of the wrapped module)
+        # the node name (the name of the wrapped module)
         self.name = name
 
         # the parent container
@@ -55,14 +55,6 @@ class LinearNode(nn.Module):
             return self.forward(self.parent.X)
 
     @property
-    def weights(self):
-        """
-        The weights of the node
-        :return:
-        """
-        return next(self.parameters())
-
-    @property
     def d2l_d2f(self):
         """
         Calculates the first term of the hessian decomposition.
@@ -95,7 +87,7 @@ class LinearNode(nn.Module):
 
         The pytorch autograd system can only compute the gradients of scalar leaf tensors.
         This forces us to iterate over every scalar tensor in the output and reconstructing the
-        gradients afterwards.
+        gradients afterwards. This sadly forces us to perform a lot of redundant computations.
 
         TODO: I see some ways to make this faster. The current time complexity of O(p_size * (outdim * n + p_size))
               can probably be reduced to something like O(p_size * (n + p_size)) due to the symmetry in the hessian
@@ -301,7 +293,7 @@ class MLPWrapper(nn.Module):
         loss = self.loss_func(out, self.Y)
         return n_out, loss
 
-    def orthogonal_model(self):
+    def orthogonal_model(self, inplace=False):
         """
         This is the main algorithm.
         It collects the orthogonal features of each node (layer) and builds the corresponding orthogonal model.
@@ -309,7 +301,10 @@ class MLPWrapper(nn.Module):
         :return: the orthogonal model
         """
 
-        ortho_model = deepcopy(self.model)
+        if inplace:
+            ortho_model = model
+        else:
+            ortho_model = deepcopy(self.model)
 
         current_node = 0
 
@@ -359,7 +354,7 @@ class DummyModel(nn.Module):
 
 if __name__ == '__main__':
     model = DummyModel()
-    #model = SimpleMLP(1, 2, 4, 2, 1)
+    # model = SimpleMLP(1, 2, 4, 2, 1)
     inputs = torch.randn(size=(512, 1), dtype=torch.float) * 10
     labels = model(inputs)
     w = MLPWrapper(model, inputs, labels)
