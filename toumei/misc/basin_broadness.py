@@ -38,6 +38,7 @@ class LinearNode(nn.Module):
     def forward(self, x):
         """
         Forwards a tensor through the node
+
         :param x: the input tensor
         :return: the hidden state/output
         """
@@ -46,6 +47,7 @@ class LinearNode(nn.Module):
     def forward_pass(self):
         """
         Performs a forward pass by making recursive calls to all previous nodes
+
         :return: the hidden state of this node
         """
         if self.prev is not None:
@@ -222,13 +224,18 @@ class LinearNode(nn.Module):
         return v_inv
 
     @property
-    def orthogonal_parameters(self):
+    def orthogonal_parameters(self, rescale=True):
         """
         Returns the orthogonal parameters.
         These are computed by shifting the parameters into the eigen-basis of the hessian.
 
+        :param rescale: Rescale the corresponding weights with the eigenvalues
         :return: the orthogonal parameters
         """
+
+        if rescale:
+            return torch.diag(self.hessian_eigenvalues) @ self.orthogonal_basis @ self.params
+
         # apply the basis shift matrix on the parameters
         return self.orthogonal_basis @ self.params
 
@@ -273,6 +280,7 @@ class MLPWrapper(nn.Module):
     def forward(self):
         """
         Makes a recursive call with the last element in the linked list of the nodes
+
         :return: the model output
         """
         return self.nodes[-1].forward_pass()
@@ -280,6 +288,7 @@ class MLPWrapper(nn.Module):
     def forward_pass(self):
         """
         Performs a forward pass
+
         :return: the model output and the loss
         """
         out = self.forward()
@@ -289,6 +298,7 @@ class MLPWrapper(nn.Module):
     def intercepted_forward_pass(self, node):
         """
         Intercepts the forward pass at the specified node and extracts the hidden state
+
         :param node: the node where the forward pass should be intercepted
         :return: the hidden state and the loss
         """
@@ -310,6 +320,7 @@ class MLPWrapper(nn.Module):
         This is the main algorithm.
         It collects the orthogonal features of each node (layer) and builds the corresponding orthogonal model.
 
+        :param inplace  if true, the algorithm will be performed on the passed model, else it will work on a copy
         :return: the orthogonal model
         """
 
@@ -336,6 +347,7 @@ class MLPWrapper(nn.Module):
         Implements two types of indexing nodes.
         1) by index
         2) by name
+
         :param item: an integer index or the node name
         :return: the corresponding node
         """
@@ -371,7 +383,7 @@ if __name__ == '__main__':
     labels = model(inputs)
     w = MLPWrapper(model, inputs, labels)
     print_modules(w.model)
-    print(w[0].unique_features)
-    print(w[0].params)
-    print(w[0].orthogonal_parameters)
-    print(w.orthogonal_model())
+    print(w['dl'].orthogonal_basis)
+    print(w['dl'].params)
+    print(w['dl'].hessian_eigenvalues)
+    print(nn.utils.parameters_to_vector(w.orthogonal_model().parameters()))
