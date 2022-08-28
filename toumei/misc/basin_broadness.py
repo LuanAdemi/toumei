@@ -9,6 +9,51 @@ from torch.nn import Parameter
 from toumei.models import SimpleMLP
 from toumei.probe import print_modules
 
+from toumei.mlp.mlp_graph import MLPGraph
+
+from pyvis.network import Network
+
+
+def hierarchy_pos(G, root, levels=None, width=1., height=1.):
+    '''If there is a cycle that is reachable from root, then this will see infinite recursion.
+       G: the graph
+       root: the root node
+       levels: a dictionary
+               key: level number (starting from 0)
+               value: number of nodes in this level
+       width: horizontal space allocated for drawing
+       height: vertical space allocated for drawing'''
+    TOTAL = "total"
+    CURRENT = "current"
+    def make_levels(levels, node=root, currentLevel=0, parent=None):
+        """Compute the number of nodes for each level
+        """
+        if not currentLevel in levels:
+            levels[currentLevel] = {TOTAL : 0, CURRENT : 0}
+        levels[currentLevel][TOTAL] += 1
+        neighbors = G.neighbors(node)
+        for neighbor in neighbors:
+            if not neighbor == parent:
+                levels =  make_levels(levels, neighbor, currentLevel + 1, node)
+        return levels
+
+    def make_pos(pos, node=root, currentLevel=0, parent=None, vert_loc=0):
+        dx = 1/levels[currentLevel][TOTAL]
+        left = dx/2
+        pos[node] = ((left + dx*levels[currentLevel][CURRENT])*width, vert_loc)
+        levels[currentLevel][CURRENT] += 1
+        neighbors = G.neighbors(node)
+        for neighbor in neighbors:
+            if not neighbor == parent:
+                pos = make_pos(pos, neighbor, currentLevel + 1, node, vert_loc-vert_gap)
+        return pos
+    if levels is None:
+        levels = make_levels({})
+    else:
+        levels = {l:{TOTAL: levels[l], CURRENT:0} for l in levels}
+    vert_gap = height / (max([l for l in levels])+1)
+    return make_pos({})
+
 
 class LinearNode(nn.Module):
     """
@@ -182,8 +227,8 @@ class LinearNode(nn.Module):
         # compute the eigenvalues and the eigenvectors of the hessian
         l, v = torch.linalg.eig(self.hessian)
 
-        # the inverse of the basis shift matrix
-        v_inverse = torch.linalg.inv(v)
+        # the (pseudo) inverse of the basis shift matrix
+        v_inverse = torch.linalg.pinv(v)
 
         # the resulting diagonal matrix with the eigenvalues on the diagonal
         diag = torch.diag(l)
@@ -320,6 +365,7 @@ class MLPWrapper(nn.Module):
         This is the main algorithm.
         It collects the orthogonal features of each node (layer) and builds the corresponding orthogonal model.
 
+        :param log_mask: If true, the parameters will be masked according to their absolute log values
         :param inplace  if true, the algorithm will be performed on the passed model, else it will work on a copy
         :return: the orthogonal model
         """
@@ -336,9 +382,12 @@ class MLPWrapper(nn.Module):
             if isinstance(module, nn.Linear) or isinstance(module, DummyLayer):
                 # set the parameters to the orthogonal ones
                 ortho_param = self[current_node].orthogonal_parameters
+
                 nn.utils.vector_to_parameters(ortho_param, module.parameters())
 
                 current_node += 1
+
+
 
         return ortho_model
 
@@ -377,13 +426,62 @@ class DummyModel(nn.Module):
 
 
 if __name__ == '__main__':
-    model = DummyModel()
-    # model = SimpleMLP(1, 2, 4, 2, 1)
-    inputs = torch.randn(size=(512, 1), dtype=torch.float)
+    model = SimpleMLP(2, 8, 4, 2, 1)
+    inputs = torch.randn(size=(1024, 2), dtype=torch.float)
     labels = model(inputs)
     w = MLPWrapper(model, inputs, labels)
     print_modules(w.model)
-    print(w['dl'].orthogonal_basis)
-    print(w['dl'].params)
-    print(w['dl'].hessian_eigenvalues)
-    print(nn.utils.parameters_to_vector(w.orthogonal_model().parameters()))
+
+    graph = MLPGraph(w.orthogonal_model())
+
+    nt = Network('900px', '1900px')
+    nt.from_nx(graph)
+    nt.set_options("""
+        const options = {
+  "nodes": {
+    "borderWidth": null,
+    "borderWidthSelected": null,
+    "opacity": null,
+    "size": null
+  },
+  "edges": {
+    "color": {
+      "inherit": true
+    },
+    "selfReferenceSize": null,
+    "selfReference": {
+      "angle": 0.7853981633974483
+    },
+    "smooth": false
+  },
+  "layout": {
+    "hierarchical": {
+      "enabled": true,
+      "direction": "LR",
+      "sortMethod": "directed"
+    }
+  },
+  "interaction": {
+    "hover": true,
+    "keyboard": {
+      "enabled": true
+    },
+    "multiselect": true,
+    "navigationButtons": true
+  },
+  "manipulation": {
+    "enabled": true
+  },
+  "physics": {
+    "hierarchicalRepulsion": {
+      "centralGravity": 0,
+      "avoidOverlap": null
+    },
+    "minVelocity": 0.75,
+    "solver": "hierarchicalRepulsion"
+  }
+}
+    """)
+    nt.show('nx.html')
+
+

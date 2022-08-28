@@ -1,6 +1,9 @@
 import itertools
+import math
 
-from toumei.parents.model_graph import ModelGraph
+import torch
+
+from toumei.parents import ModelGraph
 
 
 def peek(it):
@@ -72,7 +75,7 @@ class MLPGraph(ModelGraph):
                         # edge weight
                         self.add_node(current_node, layer=current_layer)
                         self.add_node(next_node, layer=current_layer + 1)
-                        self.add_edge(current_node, next_node,
-                                        weight=value[next_neuron, current_neuron].detach().abs().item())
+                        w = value[next_neuron, current_neuron].detach().abs().item()
+                        self.add_edge(current_node, next_node, weight=w, title=w, value=w, log_w=math.log(w + 1))
             except StopIteration:
                 break

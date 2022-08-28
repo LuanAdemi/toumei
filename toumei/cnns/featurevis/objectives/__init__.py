@@ -7,7 +7,6 @@ from toumei.cnns.featurevis.objectives.atoms.neuron import Neuron
 from toumei.cnns.featurevis.objectives.atoms.channel import Channel
 
 
-
 __all__ = [
     "Channel",
     "Neuron",

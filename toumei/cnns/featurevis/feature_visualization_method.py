@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import tqdm
-from toumei.cnns.featurevis.objectives.tv_loss import TVLoss
+from toumei.misc.tv_loss import TVLoss
 from toumei.cnns.featurevis.parameterization.imagegenerator import ImageGenerator
 from toumei.parents.objective import Objective
 

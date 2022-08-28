@@ -4,7 +4,7 @@ import torch.nn as nn
 from sklearn.cluster import SpectralClustering
 
 
-class ModelGraph(nx.Graph):
+class ModelGraph(nx.DiGraph):
     """
     Build a graph from an MLP. This enables us to perform graph algorithms on it.
 
