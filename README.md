@@ -113,7 +113,7 @@ Following methods are currently or will be implemented:
 
 Make sure the following libraries are installed or install them using 
 ```sh
-pip install pytorch torchvision tqdm matplotlib transformers seaborn scikit-learn networkx
+pip install torch torchvision tqdm matplotlib transformers seaborn scikit-learn networkx
 ```
 
 ### Installation
