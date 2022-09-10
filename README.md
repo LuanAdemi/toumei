@@ -124,7 +124,7 @@ pip install pytorch torchvision tqdm matplotlib transformers seaborn scikit-lear
 2. Run the experiments
    ```sh
    cd toumei/experiments
-   python <experiment>.py
+   PYTHONPATH=.. python <experiment>.py
    ```
 3. Move the library to your project
    ```sh
