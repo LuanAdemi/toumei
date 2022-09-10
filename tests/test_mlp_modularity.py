@@ -15,4 +15,4 @@ def test_mlp_modularity():
     graph = MLPGraph(model)
 
     # calculate the modularity
-    assert graph.get_model_modularity() == (0.15364798965963863, [1, 0, 0, 1, 1, 0, 1, 0])
+    assert graph.get_model_modularity() == (0.15438260497329004, [0, 0, 0, 0, 0, 1, 2, 3])

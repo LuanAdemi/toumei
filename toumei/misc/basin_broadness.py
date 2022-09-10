@@ -1,10 +1,8 @@
-from collections.abc import Iterator
 from copy import deepcopy
 
 import torch
 import torch.nn as nn
 from torch import autograd
-from torch.nn import Parameter
 
 from toumei.models import SimpleMLP
 from toumei.probe import print_modules
@@ -36,7 +34,7 @@ class LinearNode(nn.Module):
         # vectorized params
         self.params = nn.utils.parameters_to_vector(self.parameters())
 
-    def parameters(self, recurse: bool = True) -> Iterator[Parameter]:
+    def parameters(self, recurse: bool = True):
         return self.child.parameters()
 
     def forward(self, x):

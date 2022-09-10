@@ -1,5 +1,4 @@
 from toumei.cnns.featurevis.objectives.atoms.atom import Atom
-from toumei.cnns.featurevis.pipeline import Pipeline
 from toumei.cnns.featurevis.objectives.operations import Add, Multiply
 from toumei.cnns.featurevis.objectives.target_wrapper import TargetWrapper
 from toumei.cnns.featurevis.objectives.atoms.layer import Layer
@@ -11,7 +10,6 @@ __all__ = [
     "Channel",
     "Neuron",
     "Layer",
-    "Pipeline",
     "Add",
     "Multiply",
     "TargetWrapper"

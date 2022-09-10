@@ -3,7 +3,7 @@ import torch.nn as nn
 
 from toumei.cnns.featurevis.objectives.utils import freeze_model, unfreeze_model
 from toumei.cnns.featurevis.objectives.atoms import Atom
-from toumei.parents import FeatureVisualizationMethod
+from toumei.cnns.featurevis import FeatureVisualizationMethod
 from toumei.cnns.featurevis.parameterization.imagegenerator import ImageGenerator
 
 

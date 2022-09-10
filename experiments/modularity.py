@@ -1,9 +1,10 @@
 import torch
 
-from toumei.misc import MLPGraph, CNNGraph
+from toumei.mlp import MLPGraph
+from toumei.cnns import CNNGraph
 from toumei.models import SimpleMLP, SimpleCNN
 
-from toumei.cnns.objectives.utils import set_seed
+from toumei.cnns.featurevis.objectives.utils import set_seed
 
 """
 A script showcasing the modularity measurement of a simple MLP 

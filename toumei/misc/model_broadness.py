@@ -52,7 +52,7 @@ class BroadnessMeasurer(object):
     def measure_broadness_for_std(self, std, num_iters=1):
         loss_measured = []
         with tqdm.trange(num_iters) as t:
-            t.set_description("Measuring Broadness")
+            t.set_description(f"Measuring Broadness for std={std:.5f}")
             for i in t:
                 altered_model = deepcopy(self.model)
                 self.alter_params(altered_model, std)

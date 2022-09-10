@@ -8,6 +8,8 @@ import toumei
 import toumei.cnns.featurevis.objectives as obj
 import toumei.cnns.featurevis.parameterization as param
 
+from toumei.cnns.featurevis.feature_visualization_method import FeatureVisualizationMethod
+
 from toumei.models import Inception5h
 from toumei.cnns.featurevis.objectives.utils import freeze_model
 
@@ -163,7 +165,7 @@ class ActivationDifference(obj.Atom):
         return self.attached_model
 
 
-class StyleTransfer(toumei.parents.FeatureVisualizationMethod):
+class StyleTransfer(FeatureVisualizationMethod):
     """
     A custom objective for style transfer using InceptionV1
     """

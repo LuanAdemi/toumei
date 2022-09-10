@@ -3,10 +3,11 @@ import torch
 from PIL import Image
 import sys
 
-from toumei.misc import StyleTransfer
+from toumei.misc.styletransfer import StyleTransfer
 from toumei.cnns.featurevis.objectives.utils import set_seed
 
 sys.path.append("../")
+
 
 def test_style_transfer():
     content = np.asarray(Image.open("../assets/big_ben.png")) / 255

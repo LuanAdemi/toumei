@@ -3,10 +3,12 @@ import torchvision.transforms as T
 from toumei.models import Inception5h
 
 # import toumei
-import toumei.cnns.objectives as obj
+import toumei.cnns.featurevis.objectives as obj
 import toumei.cnns.featurevis.parameterization as param
 
-from toumei.cnns.objectives.utils import set_seed
+from toumei.cnns.featurevis.objectives.utils import set_seed
+
+from toumei.cnns.featurevis import Pipeline
 
 """
 Performing feature visualisation on the Inception model 
@@ -28,7 +30,7 @@ transform = T.Compose([
 model = Inception5h(pretrained=True)
 
 # define a feature visualization pipeline
-fv = obj.Pipeline(
+fv = Pipeline(
     # the image generator object
     param.Transform(param.FFTImage(1, 3, 224, 224), transform),
 

@@ -1,5 +1,5 @@
-from toumei.misc import StyleTransfer
-from toumei.cnns.objectives.utils import set_seed
+from toumei.misc.styletransfer import StyleTransfer
+from toumei.cnns.featurevis.objectives.utils import set_seed
 from PIL import Image
 import torch
 
