@@ -297,8 +297,6 @@ class LinearNode(nn.Module):
         :return: the orthogonal parameters
         """
 
-        print(self.orthogonal_basis[0].shape, (self.weights @ self.prev.orthogonal_basis[-1]).shape)
-
         v, d, v_inv = self.orthogonal_basis
 
         return d @ v @ self.weights @ self.prev.orthogonal_basis[-1]
