@@ -12,11 +12,70 @@ from toumei.mlp.mlp_graph import MLPGraph
 from pyvis.network import Network
 
 
+class StartNode(nn.Module):
+    """
+    This will be the head node of our linked list, which exposes the dataset to the next nodes
+    """
+    def __init__(self, data, nxt: nn.Module = None):
+        super(StartNode, self).__init__()
+
+        self.data = data
+        self.next = nxt
+
+    def forward(self, x):
+        """
+        Returns the dataset
+
+        :param x: the input tensor
+        :return: the hidden state/output
+        """
+        return self.data
+
+    def forward_pass(self):
+        """
+        Performs a forward pass by making recursive calls to all previous nodes
+
+        :return: the hidden state of this node
+        """
+        # this is the head node, so no preceding nodes exist
+        return self.data
+
+    @property
+    def orthogonal_basis(self):
+        """
+        Returns the orthogonal (eigen) basis of the parameter space
+
+        :return: the orthogonal basis
+        """
+        v = torch.eye(self.next.weights.shape[1])
+        return v, v
+
+
+class EndNode(nn.Module):
+    """
+    This will be the tail node of our linked list, which exposes the dataset to the next nodes
+    """
+
+    def __init__(self, prev: nn.Module = None):
+        super(EndNode, self).__init__()
+        self.prev = prev
+
+    @property
+    def orthogonal_basis(self):
+        """
+        Returns the orthogonal (eigen) basis of the parameter space
+
+        :return: the orthogonal basis
+        """
+        v = torch.eye(self.prev.params.shape[0])
+        return v, v
+
+
 class LinearNode(nn.Module):
     """
     Wraps a linear layer and adds functionality to it
     """
-    def __init__(self, name: str, parent: nn.Module, child: nn.Module, prv: nn.Module = None):
+    def __init__(self, name: str, parent: nn.Module, child: nn.Module, prv: nn.Module = None, nxt: nn.Module = None):
         super(LinearNode, self).__init__()
 
         # the node name (the name of the wrapped module)
@@ -26,16 +85,19 @@ class LinearNode(nn.Module):
         self.parent = parent
 
         # the wrapped linear layer
-        self.child = child
+        self.module = child
 
         # the preceding node
         self.prev = prv
 
+        # the next node
+        self.next = nxt
+
         # vectorized params
-        self.params = nn.utils.parameters_to_vector(self.parameters())
+        self.params = self.module.weight.data
 
     def parameters(self, recurse: bool = True):
-        return self.child.parameters()
+        return self.module.parameters()
 
     def forward(self, x):
         """
@@ -44,7 +106,7 @@ class LinearNode(nn.Module):
         :param x: the input tensor
         :return: the hidden state/output
         """
-        return self.child.forward(x)
+        return self.module.forward(x)
 
     def forward_pass(self):
         """
@@ -52,11 +114,11 @@ class LinearNode(nn.Module):
 
         :return: the hidden state of this node
         """
-        if self.prev is not None:
-            return self.forward(self.prev.forward_pass())
-        else:
-            # this is the tail node, so no preceding nodes exist
-            return self.forward(self.parent.X)
+        return self.forward(self.prev.forward_pass())
+
+    @property
+    def weights(self):
+        return next(self.parameters())
 
     @property
     def d2l_d2f(self):
@@ -120,12 +182,7 @@ class LinearNode(nn.Module):
                 # df/dθ
                 p_grad = torch.tensor([], requires_grad=False)
 
-                # iterate over each parameter (e. g. weight and bias)
-                for p in self.parameters():
-                    # populate df/dθ
-                    p_grad = torch.cat([p_grad, p.grad.view(-1)])
-
-                g.append(p_grad)
+                g.append(torch.cat([p_grad, self.weights.grad.view(-1)]))
 
             grads.append(torch.stack(g))
 
@@ -223,7 +280,7 @@ class LinearNode(nn.Module):
         :return: the orthogonal basis
         """
         v, d, v_inv = self.hessian_eig_decomposition
-        return v_inv
+        return v, d, v_inv
 
     @property
     def orthogonal_parameters(self, rescale=True):
@@ -231,22 +288,27 @@ class LinearNode(nn.Module):
         Returns the orthogonal parameters.
         These are computed by shifting the parameters into the eigen-basis of the hessian.
 
+        "W’=V_b W V_a^-1,
+
+        where V_a is a matrix containing the eigenbasis as its columns.
+        V_b would be the eigenbasis for the next layer"
+
         :param rescale: Rescale the corresponding weights with the eigenvalues
         :return: the orthogonal parameters
         """
 
-        if rescale:
-            return torch.diag(self.hessian_eigenvalues) @ self.orthogonal_basis @ self.params
+        print(self.orthogonal_basis[0].shape, (self.weights @ self.prev.orthogonal_basis[-1]).shape)
 
-        # apply the basis shift matrix on the parameters
-        return self.orthogonal_basis @ self.params
+        v, d, v_inv = self.orthogonal_basis
+
+        return d @ v @ self.weights @ self.prev.orthogonal_basis[-1]
 
 
 class MLPWrapper(nn.Module):
     """
     Implements a linked array list like structure.
 
-    Nodes (LinearLayers) are stored in a single linked array list and can be accessed dynamically.
+    Nodes (LinearLayers) are stored in a double linked array list and can be accessed dynamically.
 
     A node has access to every preceding node, so it can dynamically build the computation graph.
     """
@@ -267,14 +329,19 @@ class MLPWrapper(nn.Module):
         # vectorized model parameters
         self.params = nn.utils.parameters_to_vector(self.model.parameters())
 
-        # build the linked array list
-        prev = None
+        # first dummy object
+        prev = StartNode(self.X)
 
+        # fill the linked list
         for key, value in self.model.named_modules():
             if isinstance(value, nn.Linear) or isinstance(value, DummyLayer):
-                node = LinearNode(key, self, value, prev)
+                node = LinearNode(key, self, value, prev, nxt=None)
+                prev.next = node
                 self.nodes.append(node)
                 prev = node
+
+        # last dummy object
+        prev.next = EndNode(prev=prev)
 
         # a dictionary mapping the node names to an integer index
         self.key_to_idx = {n.name: i for i, n in enumerate(self.nodes)}
@@ -340,11 +407,10 @@ class MLPWrapper(nn.Module):
                 # set the parameters to the orthogonal ones
                 ortho_param = self[current_node].orthogonal_parameters
 
-                nn.utils.vector_to_parameters(ortho_param, module.parameters())
+                weights = next(module.parameters())
+                weights.data = ortho_param
 
                 current_node += 1
-
-
 
         return ortho_model
 
@@ -387,7 +453,6 @@ if __name__ == '__main__':
     inputs = torch.randn(size=(1024, 2), dtype=torch.float)
     labels = model(inputs)
     w = MLPWrapper(model, inputs, labels)
-    print_modules(w.model)
 
     graph = MLPGraph(w.orthogonal_model())
 
