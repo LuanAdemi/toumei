@@ -1,27 +1,18 @@
-from collections.abc import Iterator
 from copy import deepcopy
 
-import torch
 import torch.nn as nn
-from torch import autograd
-from torch.nn import Parameter
-
-from toumei.models import SimpleMLP
-from toumei.probe import print_modules
-
-from toumei.mlp.mlp_graph import MLPGraph
-
-from pyvis.network import Network
+import torch
 
 
-class SourceNode(nn.Module):
+class StartNode(nn.Module):
     """
     This will be the head node of our linked list, which exposes the dataset to the next nodes
     """
-    def __init__(self, data):
-        super(SourceNode, self).__init__()
+    def __init__(self, data, nxt: nn.Module = None):
+        super(StartNode, self).__init__()
 
         self.data = data
+        self.next = nxt
 
     def forward(self, x):
         """
@@ -38,15 +29,35 @@ class SourceNode(nn.Module):
 
         :return: the hidden state of this node
         """
-        # this is the tail node, so no preceding nodes exist
+        # this is the head node, so no preceding nodes exist
         return self.data
+
+    @property
+    def orthogonal_basis(self):
+        """
+        Returns the orthogonal (eigen) basis of the parameter space
+
+        :return: the orthogonal basis
+        """
+        v = torch.eye(self.next.weights.shape[1])
+        return v, v
+
+
+class EndNode(nn.Module):
+    """
+    This will be the tail node of our linked list, which exposes the dataset to the next nodes
+    """
+
+    def __init__(self, prev: nn.Module = None):
+        super(EndNode, self).__init__()
+        self.prev = prev
 
 
 class LinearNode(nn.Module):
     """
     Wraps a linear layer and adds functionality to it
     """
-    def __init__(self, name: str, parent: nn.Module, child: nn.Module, prv: nn.Module = None):
+    def __init__(self, name: str, parent: nn.Module, child: nn.Module, prv: nn.Module = None, nxt: nn.Module = None):
         super(LinearNode, self).__init__()
 
         # the node name (the name of the wrapped module)
@@ -56,16 +67,16 @@ class LinearNode(nn.Module):
         self.parent = parent
 
         # the wrapped linear layer
-        self.child = child
+        self.module = child
 
         # the preceding node
         self.prev = prv
 
-        # vectorized params
-        self.params = nn.utils.parameters_to_vector(self.parameters())
+        # the next node
+        self.next = nxt
 
-    def parameters(self, recurse: bool = True) -> Iterator[Parameter]:
-        return self.child.parameters()
+    def parameters(self, recurse: bool = True):
+        return self.module.parameters()
 
     def forward(self, x):
         """
@@ -74,7 +85,7 @@ class LinearNode(nn.Module):
         :param x: the input tensor
         :return: the hidden state/output
         """
-        return self.child.forward(x)
+        return self.module.forward(x)
 
     def forward_pass(self):
         """
@@ -85,15 +96,89 @@ class LinearNode(nn.Module):
         return self.forward(self.prev.forward_pass())
 
     @property
+    def weights(self):
+        return next(self.parameters())
+
+    @property
+    def biases(self):
+        for p in self.parameters():
+            ""
+        return p.unsqueeze(1)
+
+    @property
+    def params(self):
+        return self.weights
+
+    @property
+    def activation(self):
+        return torch.sum(self.forward_pass(), dim=0)
+
+    @property
     def activation_matrix(self):
-        activations = self.prev.forward_pass()
+        act = self.activation
+        matrix = torch.outer(act, act.T)
+        return matrix
 
-        result = torch.zeros(size=(activations.shape[-1], activations.shape[-1]))
+    @property
+    def act_eigenvalues(self):
+        """
+        Returns the eigenvalues of the hessian by computing the
+        eigenvalue decomposition.
 
-        for a in activations:
-            result += torch.outer(a, a.T)
+        :return: the eigenvalues and eigenvectors of the model hessian
+        """
+        return torch.linalg.eigvals(self.activation_matrix).real
 
-        return result
+    @property
+    def act_eig_decomposition(self):
+        """
+        Returns the eigenvalue decomposition of the hessian matrix
+
+        Let A be the hessian. The eigenvalue decomposition is defined as
+
+            A = V * diag(L) * V^-1
+
+        where L are the eigenvalues.
+
+        Note:
+
+        The eigenvectors are normalized to have norm 1 by default (see pytorch documentation).
+
+        :return: V, diag(L), V^-1
+        """
+        # compute the eigenvalues and the eigenvectors of the hessian
+        l, v = torch.linalg.eig(self.activation_matrix)
+
+        # the (pseudo) inverse of the basis shift matrix
+        v_inverse = torch.linalg.pinv(v)
+
+        # the resulting diagonal matrix with the eigenvalues on the diagonal
+        diag = torch.diag(l)
+
+        return v.real, diag.real, v_inverse.real
+
+    @property
+    def unique_features(self):
+        """
+        Returns the amount of unique features the model has.
+        This is equal to the rank of diag(L).
+
+        NOTE:
+
+        The autograd system will not yield perfect gradients or eigenvalues,
+        since it has some numerical instability to it.
+
+        In some cases this can result in having eigenvalues that are not quite zero,
+        even though this might algebraically be the case. This is fixed by letting the matrix rank
+        computation have a threshold for just viewing entries as zero.
+
+        It is perfectly normal if the calculated rank of the matrix is smaller than it seems when looking at
+        the matrix directly.
+
+        :return: The amount of unique features the model has
+        """
+        _, D, _ = self.act_eig_decomposition
+        return torch.linalg.matrix_rank(D).item()
 
     @property
     def orthogonal_basis(self):
@@ -102,15 +187,34 @@ class LinearNode(nn.Module):
 
         :return: the orthogonal basis
         """
-        L, V = torch.linalg.eig(self.activation_matrix)
-        return V.real, torch.diag(L)
+        v, d, v_inv = self.act_eig_decomposition
+        return v, d, v_inv
+
+    @property
+    def orthogonal_parameters(self, rescale=True):
+        """
+        Returns the orthogonal parameters.
+        These are computed by shifting the parameters into the eigen-basis of the hessian.
+
+        "W’=V_b W V_a^-1,
+
+        where V_a is a matrix containing the eigenbasis as its columns.
+        V_b would be the eigenbasis for the next layer"
+
+        :param rescale: Rescale the corresponding weights with the eigenvalues
+        :return: the orthogonal parameters
+        """
+
+        v, d, v_inv = self.orthogonal_basis
+
+        return d @ v @ self.weights @ self.prev.orthogonal_basis[-1]
 
 
 class MLPWrapper(nn.Module):
     """
     Implements a linked array list like structure.
 
-    Nodes (LinearLayers) are stored in a single linked array list and can be accessed dynamically.
+    Nodes (LinearLayers) are stored in a double linked array list and can be accessed dynamically.
 
     A node has access to every preceding node, so it can dynamically build the computation graph.
     """
@@ -131,14 +235,19 @@ class MLPWrapper(nn.Module):
         # vectorized model parameters
         self.params = nn.utils.parameters_to_vector(self.model.parameters())
 
-        # build the linked array list
-        prev = SourceNode(data=self.X)
+        # first dummy object
+        prev = StartNode(self.X)
 
+        # fill the linked list
         for key, value in self.model.named_modules():
-            if isinstance(value, nn.Linear) or isinstance(value, DummyLayer):
-                node = LinearNode(key, self, value, prev)
+            if isinstance(value, nn.Linear):
+                node = LinearNode(key, self, value, prev, nxt=None)
+                prev.next = node
                 self.nodes.append(node)
                 prev = node
+
+        # last dummy object
+        prev.next = EndNode(prev=prev)
 
         # a dictionary mapping the node names to an integer index
         self.key_to_idx = {n.name: i for i, n in enumerate(self.nodes)}
@@ -192,7 +301,7 @@ class MLPWrapper(nn.Module):
         """
 
         if inplace:
-            ortho_model = model
+            ortho_model = self.model
         else:
             ortho_model = deepcopy(self.model)
 
@@ -200,15 +309,14 @@ class MLPWrapper(nn.Module):
 
         # iterate over each module of the orthogonal model
         for name, module in ortho_model.named_modules():
-            if isinstance(module, nn.Linear) or isinstance(module, DummyLayer):
+            if isinstance(module, nn.Linear):
                 # set the parameters to the orthogonal ones
                 ortho_param = self[current_node].orthogonal_parameters
 
-                nn.utils.vector_to_parameters(ortho_param, module.parameters())
+                weights = next(module.parameters())
+                weights.data = ortho_param
 
                 current_node += 1
-
-
 
         return ortho_model
 
@@ -225,36 +333,3 @@ class MLPWrapper(nn.Module):
             return self.nodes[self.key_to_idx[item]]
         else:
             return self.nodes[item]
-
-
-class DummyLayer(nn.Module):
-    def __init__(self):
-        super(DummyLayer, self).__init__()
-        self.params = nn.Parameter(torch.ones((3,), dtype=torch.float))
-
-    def forward(self, x):
-        return self.params[0] * x + self.params[1] * x + self.params[2] * x
-
-
-class DummyModel(nn.Module):
-    def __init__(self):
-        super(DummyModel, self).__init__()
-
-        self.dl = DummyLayer()
-
-    def forward(self, x):
-        return self.dl(x)
-
-
-if __name__ == '__main__':
-    model = SimpleMLP(1, 4, 8, 3, 1)
-    inputs = torch.randn(size=(1024, 1), dtype=torch.float)
-    labels = model(inputs)
-    w = MLPWrapper(model, inputs, labels)
-
-
-    print(w[1].orthogonal_basis)
-
-
-
-
