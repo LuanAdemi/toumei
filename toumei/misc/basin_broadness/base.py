@@ -103,20 +103,33 @@ class LinearNode(nn.Module):
     def biases(self):
         for p in self.parameters():
             ""
-        return p.unsqueeze(1)
+        return p
+
+    @biases.setter
+    def biases(self, value):
+        self._biases = value
 
     @property
     def params(self):
-        return self.weights
+        return torch.cat([self.weights, self.biases.unsqueeze(1)], dim=1)
 
     @property
-    def activation(self):
-        return torch.sum(self.forward_pass(), dim=0)
+    def activations(self):
+        return self.prev.forward_pass()
 
     @property
     def activation_matrix(self):
-        act = self.activation
-        matrix = torch.outer(act, act.T)
+        # retrieve the activations
+        act = self.activations
+
+        # append a one to the activation vector, to represent the bias as a constant feature in the hilbert space
+        act = torch.cat([act, torch.ones((act.shape[0], 1))], dim=1)
+        matrix = torch.zeros(size=(act.shape[1], act.shape[1]))
+
+        # sum over all dataset samples
+        for a in act:
+            matrix += torch.outer(a, a.T)
+
         return matrix
 
     @property
@@ -150,7 +163,7 @@ class LinearNode(nn.Module):
         l, v = torch.linalg.eig(self.activation_matrix)
 
         # the (pseudo) inverse of the basis shift matrix
-        v_inverse = torch.linalg.pinv(v)
+        v_inverse = torch.linalg.inv(v)
 
         # the resulting diagonal matrix with the eigenvalues on the diagonal
         diag = torch.diag(l)
@@ -190,24 +203,20 @@ class LinearNode(nn.Module):
         v, d, v_inv = self.act_eig_decomposition
         return v, d, v_inv
 
-    @property
-    def orthogonal_parameters(self, rescale=True):
-        """
-        Returns the orthogonal parameters.
-        These are computed by shifting the parameters into the eigen-basis of the hessian.
-
-        "W’=V_b W V_a^-1,
-
-        where V_a is a matrix containing the eigenbasis as its columns.
-        V_b would be the eigenbasis for the next layer"
-
-        :param rescale: Rescale the corresponding weights with the eigenvalues
-        :return: the orthogonal parameters
-        """
-
+    def orthogonalise(self):
         v, d, v_inv = self.orthogonal_basis
+        v_n, d_n, v_inv_n = self.next.orthogonal_basis
 
-        return d @ v @ self.weights @ self.prev.orthogonal_basis[-1]
+        print(v.shape, v_n.shape)
+
+        # set the biases to zero
+        ortho_bias = torch.zeros_like(self.biases)
+
+        weights = torch.cat([self.weights, self.biases.unsqueeze(1)], dim=1)
+
+        ortho_weights = d @ v_n @ weights @ v_inv
+
+        print(ortho_weights)
 
 
 class MLPWrapper(nn.Module):
@@ -227,7 +236,8 @@ class MLPWrapper(nn.Module):
         self.loss_func = loss_func
 
         # the model
-        self.model = model
+        self.model = deepcopy(model)
+        self.old_model = model
 
         # a container for the single linked array list
         self.nodes = []

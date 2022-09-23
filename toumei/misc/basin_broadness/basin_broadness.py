@@ -5,9 +5,17 @@ from toumei.models import SimpleMLP
 from base import MLPWrapper
 
 if __name__ == '__main__':
-    model = SimpleMLP(2, 8, 4, 2, 1)
-    inputs = torch.randn(size=(1024, 2), dtype=torch.float)
-    labels = model(inputs)
-    w = MLPWrapper(model, inputs, labels)
+    Xs = torch.Tensor([[0., 0.],
+                       [0., 1.],
+                       [1., 0.],
+                       [1., 1.]])
 
-    print(w[0].orthogonal_parameters)
+    y = torch.Tensor([0., 1., 1., 0.]).reshape(Xs.shape[0], 1)
+
+    model = SimpleMLP(2, 4, 1, activation=nn.Sigmoid())
+    model.load_state_dict(torch.load("xor_model_2_4_1.pth"))
+    w = MLPWrapper(model, Xs, y)
+
+    print(w[1].activation_matrix)
+    print(w[1].params.shape)
+    print(w[1].orthogonal_basis[0] @ w[1].orthogonal_basis[0].T)

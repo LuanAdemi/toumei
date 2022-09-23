@@ -16,14 +16,14 @@ def add_layers(model, dimensions):
 class SimpleMLP(nn.Module):
     layers = []
 
-    def __init__(self, *dimensions):
+    def __init__(self, *dimensions, activation=nn.ReLU()):
         super(SimpleMLP, self).__init__()
 
         self.layers = add_layers(self, dimensions)
 
-        self.relu = nn.CELU()
+        self.act = activation
 
     def forward(self, x):
         for layer in self.layers[:-1]:
-            x = self.relu(layer(x))
+            x = self.act(layer(x))
         return self.layers[-1](x)
