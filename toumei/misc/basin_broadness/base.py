@@ -4,9 +4,16 @@ import torch.nn as nn
 import torch
 
 
+"""
+This script provides the base classes for the feature orthogonalisation algorithm.
+
+This is WIP and will need a lot more work.
+"""
+
+
 class StartNode(nn.Module):
     """
-    This will be the head node of our linked list, which exposes the dataset to the next nodes
+    This dummy object will be the head node of our linked list, which exposes the dataset to the next nodes.
     """
     def __init__(self, data, nxt: nn.Module = None):
         super(StartNode, self).__init__()
@@ -32,20 +39,10 @@ class StartNode(nn.Module):
         # this is the head node, so no preceding nodes exist
         return self.data
 
-    @property
-    def orthogonal_basis(self):
-        """
-        Returns the orthogonal (eigen) basis of the parameter space
-
-        :return: the orthogonal basis
-        """
-        v = torch.eye(self.next.weights.shape[1])
-        return v, v
-
 
 class EndNode(nn.Module):
     """
-    This will be the tail node of our linked list, which exposes the dataset to the next nodes
+    This dummy object will be the tail node of our linked list.
     """
 
     def __init__(self, prev: nn.Module = None):
@@ -57,19 +54,16 @@ class LinearNode(nn.Module):
     """
     Wraps a linear layer and adds functionality to it
     """
-    def __init__(self, name: str, parent: nn.Module, child: nn.Module, prv: nn.Module = None, nxt: nn.Module = None):
+    def __init__(self, name: str, child: nn.Module, prv: nn.Module = None, nxt: nn.Module = None):
         super(LinearNode, self).__init__()
 
         # the node name (the name of the wrapped module)
         self.name = name
 
-        # the parent container
-        self.parent = parent
-
         # the wrapped linear layer
         self.module = child
 
-        # the preceding node
+        # the previous node
         self.prev = prv
 
         # the next node
@@ -97,50 +91,64 @@ class LinearNode(nn.Module):
 
     @property
     def weights(self):
+        """
+        Returns the weight matrix of the current node
+
+        :return: A matrix containing the weights of the node
+        """
         return next(self.parameters())
 
     @property
     def biases(self):
-        for p in self.parameters():
-            ""
-        return p
+        """
+        Returns the bias vector of the current node
+        (Please ignore the code below. It will be better for your sanity)
 
-    @biases.setter
-    def biases(self, value):
-        self._biases = value
+        :return: A vector containing the bias
+        """
+        for p in self.parameters():
+            continue
+        return p
 
     @property
     def params(self):
+        """
+        A matrix containing the weights and the biases as an additional row
+
+        :return: the parameter matrix
+        """
         return torch.cat([self.weights, self.biases.unsqueeze(1)], dim=1)
 
     @property
     def activations(self):
+        """
+        Returns the activations of the current node
+
+        :return: the activation vector
+        """
         return self.prev.forward_pass()
 
     @property
     def activation_matrix(self):
+        """
+        Computes the activation matrix by calculating the outer product of the activation vector with its transpose
+
+        :return: The activation matrix
+        """
         # retrieve the activations
         act = self.activations
 
         # append a one to the activation vector, to represent the bias as a constant feature in the hilbert space
-        act = torch.cat([act, torch.ones((act.shape[0], 1))], dim=1)
+        bias_row = torch.zeros(size=(act.shape[0], 1))
+        bias_row[0] = 1
+        act = torch.cat([act, bias_row], dim=1)
         matrix = torch.zeros(size=(act.shape[1], act.shape[1]))
 
         # sum over all dataset samples
-        for a in act:
-            matrix += torch.outer(a, a.T)
+        for x in act:
+            matrix += torch.outer(x, x.T)
 
         return matrix
-
-    @property
-    def act_eigenvalues(self):
-        """
-        Returns the eigenvalues of the hessian by computing the
-        eigenvalue decomposition.
-
-        :return: the eigenvalues and eigenvectors of the model hessian
-        """
-        return torch.linalg.eigvals(self.activation_matrix).real
 
     @property
     def act_eig_decomposition(self):
@@ -160,38 +168,11 @@ class LinearNode(nn.Module):
         :return: V, diag(L), V^-1
         """
         # compute the eigenvalues and the eigenvectors of the hessian
-        l, v = torch.linalg.eig(self.activation_matrix)
-
-        # the (pseudo) inverse of the basis shift matrix
-        v_inverse = torch.linalg.inv(v)
+        L, Q = torch.linalg.eig(self.activation_matrix)
 
         # the resulting diagonal matrix with the eigenvalues on the diagonal
-        diag = torch.diag(l)
 
-        return v.real, diag.real, v_inverse.real
-
-    @property
-    def unique_features(self):
-        """
-        Returns the amount of unique features the model has.
-        This is equal to the rank of diag(L).
-
-        NOTE:
-
-        The autograd system will not yield perfect gradients or eigenvalues,
-        since it has some numerical instability to it.
-
-        In some cases this can result in having eigenvalues that are not quite zero,
-        even though this might algebraically be the case. This is fixed by letting the matrix rank
-        computation have a threshold for just viewing entries as zero.
-
-        It is perfectly normal if the calculated rank of the matrix is smaller than it seems when looking at
-        the matrix directly.
-
-        :return: The amount of unique features the model has
-        """
-        _, D, _ = self.act_eig_decomposition
-        return torch.linalg.matrix_rank(D).item()
+        return Q.real, L.real, torch.linalg.inv(Q).real
 
     @property
     def orthogonal_basis(self):
@@ -200,23 +181,33 @@ class LinearNode(nn.Module):
 
         :return: the orthogonal basis
         """
-        v, d, v_inv = self.act_eig_decomposition
-        return v, d, v_inv
+        Q, D, Q_inv = self.act_eig_decomposition
+        return Q, D, Q_inv
 
     def orthogonalise(self):
-        v, d, v_inv = self.orthogonal_basis
-        v_n, d_n, v_inv_n = self.next.orthogonal_basis
+        """
+        Orthonormalizes the weight matrix of the current node.
 
-        print(v.shape, v_n.shape)
+        This is done by computing the eigen-decomposition of the activation matrix in order to find a basis in which
+        said matrix has a diagonal form.
 
-        # set the biases to zero
-        ortho_bias = torch.zeros_like(self.biases)
+        The weight matrix is transformed as follows:
 
-        weights = torch.cat([self.weights, self.biases.unsqueeze(1)], dim=1)
+        W* = D @ W_i @ Q_i^-1
 
-        ortho_weights = d @ v_n @ weights @ v_inv
+        :return: The orthogonal parameters for this node
+        """
+        # collect the orthogonal basis of the current node
+        Q, L, Q_inv = self.orthogonal_basis
 
-        print(ortho_weights)
+        # note: 1-d tensors are for some reason ALWAYS row vectors, so this transpose hack is needed for rescaling
+        ortho_weights = (torch.diag(L) @ (self.params @ Q_inv @ Q).T).T
+
+        ortho_module = nn.Linear(*ortho_weights.T.shape, bias=False)
+
+        ortho_module.weight = nn.Parameter(ortho_weights)
+
+        return ortho_module, L
 
 
 class MLPWrapper(nn.Module):
@@ -225,19 +216,19 @@ class MLPWrapper(nn.Module):
 
     Nodes (LinearLayers) are stored in a double linked array list and can be accessed dynamically.
 
-    A node has access to every preceding node, so it can dynamically build the computation graph.
+    A node has access to every previous and next node, so it can dynamically build the computation graph.
     """
-    def __init__(self, model: nn.Module, x: torch.Tensor, y: torch.Tensor, loss_func=nn.MSELoss()):
+    def __init__(self, model: nn.Module, inputs: torch.Tensor, labels: torch.Tensor, loss_func=nn.MSELoss()):
         super(MLPWrapper, self).__init__()
 
         # the dataset and loss function
-        self.X = x
-        self.Y = y
+        self.X = inputs
+        self.Y = labels
         self.loss_func = loss_func
 
         # the model
         self.model = deepcopy(model)
-        self.old_model = model
+        self.p_model = model
 
         # a container for the single linked array list
         self.nodes = []
@@ -249,11 +240,15 @@ class MLPWrapper(nn.Module):
         prev = StartNode(self.X)
 
         # fill the linked list
-        for key, value in self.model.named_modules():
-            if isinstance(value, nn.Linear):
-                node = LinearNode(key, self, value, prev, nxt=None)
+        for name, module in self.model.named_modules():
+            if isinstance(module, nn.Linear):
+                # create new node
+                node = LinearNode(name, module, prev)
+                # set the next node of the previous node to the new node
                 prev.next = node
+                # add the new node to the node list
                 self.nodes.append(node)
+                # set the previous node to the new node
                 prev = node
 
         # last dummy object
@@ -268,6 +263,7 @@ class MLPWrapper(nn.Module):
 
         :return: the model output
         """
+        # call a forward pass on the tail node
         return self.nodes[-1].forward_pass()
 
     def forward_pass(self):
@@ -280,32 +276,11 @@ class MLPWrapper(nn.Module):
         loss = self.loss_func(out, self.Y)
         return out, loss
 
-    def intercepted_forward_pass(self, node):
-        """
-        Intercepts the forward pass at the specified node and extracts the hidden state
-
-        :param node: the node where the forward pass should be intercepted
-        :return: the hidden state and the loss
-        """
-
-        # retrieve the hidden state of the specified node
-        n_out = node.forward_pass()
-
-        out = n_out
-
-        # continue the forward pass
-        for node in self.nodes[self.nodes.index(node)+1:]:
-            out = node(out)
-
-        loss = self.loss_func(out, self.Y)
-        return n_out, loss
-
     def orthogonal_model(self, inplace=False):
         """
         This is the main algorithm.
         It collects the orthogonal features of each node (layer) and builds the corresponding orthogonal model.
 
-        :param log_mask: If true, the parameters will be masked according to their absolute log values
         :param inplace  if true, the algorithm will be performed on the passed model, else it will work on a copy
         :return: the orthogonal model
         """
