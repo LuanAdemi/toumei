@@ -138,9 +138,8 @@ class LinearNode(nn.Module):
         # retrieve the activations
         act = self.activations
 
-        # append a one to the activation vector, to represent the bias as a constant feature in the hilbert space
-        bias_row = torch.zeros(size=(act.shape[0], 1))
-        bias_row[0] = 1
+        # append ones to the activation vector, to represent the bias as a constant feature in the hilbert space
+        bias_row = torch.ones(size=(act.shape[0], 1))
         act = torch.cat([act, bias_row], dim=1)
         matrix = torch.zeros(size=(act.shape[1], act.shape[1]))
 
@@ -193,15 +192,15 @@ class LinearNode(nn.Module):
 
         The weight matrix is transformed as follows:
 
-        W* = D @ W_i @ Q_i^-1
+        W' = D @ W_i @ Q_i^-1 @ Q_i
 
         :return: The orthogonal parameters for this node
         """
         # collect the orthogonal basis of the current node
-        Q, L, Q_inv = self.orthogonal_basis
+        Q, L, Q_INV = self.orthogonal_basis
 
         # note: 1-d tensors are for some reason ALWAYS row vectors, so this transpose hack is needed for rescaling
-        ortho_weights = (torch.diag(L) @ (self.params @ Q_inv @ Q).T).T
+        ortho_weights = (torch.diag(L) @ (self.params @ Q_INV @ Q).T).T
 
         ortho_module = nn.Linear(*ortho_weights.T.shape, bias=False)
 
