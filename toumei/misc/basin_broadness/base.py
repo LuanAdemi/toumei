@@ -226,6 +226,8 @@ class LinearNode(nn.Module):
 
         ortho_module.weight = nn.Parameter(ortho_weights)
 
+        print(ortho_weights)
+
         return ortho_module, L
 
 

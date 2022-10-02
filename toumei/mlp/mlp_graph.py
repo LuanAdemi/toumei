@@ -40,7 +40,7 @@ class MLPGraph(ModelGraph):
         weights = {}
 
         for (key, value) in named_params:
-            if 'weight' in key and 'fc' in key:
+            if 'weight' in key:
                 weights[key] = value
 
         return weights
@@ -64,6 +64,7 @@ class MLPGraph(ModelGraph):
             try:
                 # get the current named parameter weight
                 key, value = next(iterator)
+
                 current_layer += 1
                 for current_neuron in range(value.shape[1]):
                     current_node = f"layer{current_layer}:{current_neuron}"
@@ -76,6 +77,7 @@ class MLPGraph(ModelGraph):
                         self.add_node(current_node, layer=current_layer)
                         self.add_node(next_node, layer=current_layer + 1)
                         w = value[next_neuron, current_neuron].detach().abs().item()
+                        print(current_node, w)
                         self.add_edge(current_node, next_node, weight=w, title=w, value=w, log_w=math.log(w + 1))
             except StopIteration:
                 break
