@@ -113,11 +113,31 @@ class LinearNode(nn.Module):
     @property
     def params(self):
         """
-        A matrix containing the weights and the biases as an additional row
+        A matrix containing the parameters of the layer.
+
+        This is essentially the weight matrix with one additional column and row like so
+
+        W_11 . . . W_1j B_1
+         .   .           .
+         .      .        .
+         .         .     .
+        W_i1 . . . W_ij B_i
+        0    . . .   0   1 < One-Row
+                         ^
+                        Bias
+
+        This creates a new neuron for the bias, which can be used as a vector (function) for the hilbert space
 
         :return: the parameter matrix
         """
-        return torch.cat([self.weights, self.biases.unsqueeze(1)], dim=1)
+        weights = self.weights
+        biases = self.biases.unsqueeze(1)
+
+        params = torch.cat([weights, biases], dim=1)
+        one_row = torch.tensor([0 for _ in range(weights.shape[1])] + [1]).unsqueeze(0)
+
+        params = torch.cat([params, one_row], dim=0)
+        return params
 
     @property
     def activations(self):
@@ -226,8 +246,7 @@ class MLPWrapper(nn.Module):
         self.loss_func = loss_func
 
         # the model
-        self.model = deepcopy(model)
-        self.p_model = model
+        self.model = model
 
         # a container for the single linked array list
         self.nodes = []
@@ -275,7 +294,7 @@ class MLPWrapper(nn.Module):
         loss = self.loss_func(out, self.Y)
         return out, loss
 
-    def orthogonal_model(self, inplace=False):
+    def orthogonal_model(self):
         """
         This is the main algorithm.
         It collects the orthogonal features of each node (layer) and builds the corresponding orthogonal model.
@@ -284,25 +303,22 @@ class MLPWrapper(nn.Module):
         :return: the orthogonal model
         """
 
-        if inplace:
-            ortho_model = self.model
-        else:
-            ortho_model = deepcopy(self.model)
+        modules = []
 
         current_node = 0
 
         # iterate over each module of the orthogonal model
-        for name, module in ortho_model.named_modules():
+        for name, module in self.model.named_children():
             if isinstance(module, nn.Linear):
                 # set the parameters to the orthogonal ones
-                ortho_param = self[current_node].orthogonal_parameters
-
-                weights = next(module.parameters())
-                weights.data = ortho_param
-
+                ortho_module, L = self[current_node].orthogonalise()
+                modules.append(ortho_module)
                 current_node += 1
+                continue
 
-        return ortho_model
+            modules.append(module)
+
+        return nn.Sequential(*modules)
 
     def __getitem__(self, item):
         """

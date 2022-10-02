@@ -17,6 +17,7 @@ if __name__ == '__main__':
     model.load_state_dict(torch.load("xor_model_2_4_1.pth"))
     w = MLPWrapper(model, inputs, labels)
 
-    orthogonal_layer, eigen_values = w[1].orthogonalise()
-    print(orthogonal_layer.weight)
-    print(eigen_values)
+    orthogonal_layer, eigen_values = w[0].orthogonalise()
+
+    ortho_model = w.orthogonal_model()
+    print(ortho_model)
