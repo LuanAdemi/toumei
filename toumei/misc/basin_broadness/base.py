@@ -1,8 +1,5 @@
-from copy import deepcopy
-
-import torch.nn as nn
 import torch
-
+import torch.nn as nn
 
 """
 This script provides the base classes for the feature orthogonalisation algorithm.

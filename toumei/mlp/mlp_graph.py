@@ -1,8 +1,6 @@
 import itertools
 import math
 
-import torch
-
 from toumei.parents import ModelGraph
 
 
@@ -60,24 +58,24 @@ class MLPGraph(ModelGraph):
 
         current_layer = 0
 
-        while True:
-            try:
-                # get the current named parameter weight
-                key, value = next(iterator)
+        for key in weights.keys():
+            # get the current named parameter weight
+            value = weights[key]
 
-                current_layer += 1
-                for current_neuron in range(value.shape[1]):
-                    current_node = f"layer{current_layer}:{current_neuron}"
-                    # iterate over every sub node
-                    for next_neuron in range(value.shape[0]):
-                        next_node = f"layer{current_layer + 1}:{next_neuron}"
+            current_layer += 1
+            for current_neuron in range(value.shape[1]):
+                current_node = f"layer{current_layer}:{current_neuron}"
+                # iterate over every sub node
+                for next_neuron in range(value.shape[0]):
+                    next_node = f"layer{current_layer + 1}:{next_neuron}"
 
-                        # add an edge between the two nodes using the absolute value of the parameter weight as the
-                        # edge weight
+                    # add an edge between the two nodes using the absolute value of the parameter weight as the
+                    # edge weight
+                    if not self.has_node(current_node):
                         self.add_node(current_node, layer=current_layer)
+                    if not self.has_node(next_node):
                         self.add_node(next_node, layer=current_layer + 1)
-                        w = value[next_neuron, current_neuron].detach().abs().item()
-                        print(current_node, w)
-                        self.add_edge(current_node, next_node, weight=w, title=w, value=w, log_w=math.log(w + 1))
-            except StopIteration:
-                break
+                    w = value[next_neuron, current_neuron].detach().abs().item()
+                    print(current_node, w)
+                    num_edges_prev = len(self.edges.items())
+                    self.add_edge(current_node, next_node, weight=w, title=w, value=w, log_w=math.log(w + 1))
