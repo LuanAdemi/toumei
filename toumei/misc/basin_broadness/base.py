@@ -132,8 +132,8 @@ class LinearNode(nn.Module):
 
         params = torch.cat([weights, biases], dim=1)
         one_row = torch.tensor([0 for _ in range(weights.shape[1])] + [1]).unsqueeze(0)
-
-        params = torch.cat([params, one_row], dim=0)
+        if not isinstance(self.next, EndNode):
+            params = torch.cat([params, one_row], dim=0)
         return params
 
     @property
@@ -209,21 +209,22 @@ class LinearNode(nn.Module):
 
         The weight matrix is transformed as follows:
 
-        W' = D @ W_i @ Q_i^-1 @ Q_i
+        W' = W_i @ Q_i^-1 @ Q_i
 
         :return: The orthogonal parameters for this node
         """
         # collect the orthogonal basis of the current node
         Q, L, Q_INV = self.orthogonal_basis
 
-        # note: 1-d tensors are for some reason ALWAYS row vectors, so this transpose hack is needed for rescaling
-        ortho_weights = (torch.diag(L) @ (self.params @ Q_INV @ Q).T).T
+        if not isinstance(self.next, EndNode):
+            Q_n, L_n, _ = self.next.orthogonal_basis
+            ortho_weights = Q_n @ self.params @ Q_INV
+        else:
+            ortho_weights = self.params @ Q_INV
 
         ortho_module = nn.Linear(*ortho_weights.T.shape, bias=False)
 
         ortho_module.weight = nn.Parameter(ortho_weights)
-
-        print(ortho_weights)
 
         return ortho_module, L
 
@@ -293,7 +294,7 @@ class MLPWrapper(nn.Module):
         loss = self.loss_func(out, self.Y)
         return out, loss
 
-    def orthogonal_model(self):
+    def orthogonal_model(self, act=nn.Sigmoid()):
         """
         This is the main algorithm.
         It collects the orthogonal features of each node (layer) and builds the corresponding orthogonal model.
@@ -313,9 +314,7 @@ class MLPWrapper(nn.Module):
                 ortho_module, L = self[current_node].orthogonalise()
                 modules.append(ortho_module)
                 current_node += 1
-                continue
-
-            modules.append(module)
+                modules.append(act)
 
         return nn.Sequential(*modules)
 

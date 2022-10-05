@@ -53,9 +53,6 @@ class MLPGraph(ModelGraph):
         # get the named parameter weights
         weights = self._get_weights()
 
-        # an iterator for iterating over the named parameters
-        iterator = iter(weights.items())
-
         current_layer = 0
 
         for key in weights.keys():
@@ -76,6 +73,6 @@ class MLPGraph(ModelGraph):
                     if not self.has_node(next_node):
                         self.add_node(next_node, layer=current_layer + 1)
                     w = value[next_neuron, current_neuron].detach().abs().item()
-                    print(current_node, w)
+                    v = value[next_neuron, current_neuron].detach().item()
                     num_edges_prev = len(self.edges.items())
-                    self.add_edge(current_node, next_node, weight=w, title=w, value=w, log_w=math.log(w + 1))
+                    self.add_edge(current_node, next_node, weight=w, title=v, value=w)

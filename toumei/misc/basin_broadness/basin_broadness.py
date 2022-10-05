@@ -15,16 +15,22 @@ if __name__ == '__main__':
 
     labels = torch.Tensor([0., 1., 1., 0.]).reshape(inputs.shape[0], 1)
 
-    model = SimpleMLP(2, 4, 1, activation=nn.Sigmoid())
-    model.load_state_dict(torch.load("xor_model_2_4_1.pth"))
+    model = SimpleMLP(2, 16, 1, activation=nn.Sigmoid())
+    model.load_state_dict(torch.load("xor16.pth"))
     w = MLPWrapper(model, inputs, labels)
 
-    ortho_model = w.orthogonal_model()
+    ortho_model = w.orthogonal_model(act=nn.Sigmoid())
     print(ortho_model)
 
     graph1 = MLPGraph(model=ortho_model)
-    print(graph1.nodes)
-    print(graph1.get_model_modularity())
+    graph2 = MLPGraph(model=model)
+
+    module1, L1 = w[0].orthogonalise()
+    module2, L2 = w[1].orthogonalise()
+
+    inp = torch.cat([inputs, torch.ones(4).unsqueeze(1)], dim=1)
+
+    print(L1, L2, ortho_model(inp))
 
     nt = Network('900px', '1900px')
     nt.from_nx(graph1)
@@ -74,4 +80,4 @@ if __name__ == '__main__':
       }
     }
         """)
-    nt.show('nx.html')
+    #nt.show('nx.html')
