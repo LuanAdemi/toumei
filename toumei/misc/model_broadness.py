@@ -1,10 +1,9 @@
 from copy import deepcopy
 
-import torch
-from torch.utils.data import DataLoader
 import numpy as np
-
+import torch
 import tqdm
+from torch.utils.data import DataLoader
 
 
 class BroadnessMeasurer(object):
@@ -12,9 +11,9 @@ class BroadnessMeasurer(object):
     Measure the broadness of a model.
     """
     def __init__(self, model, dataset, loss_func, gt_func=None):
-        self.model = model
         self.dataLoader = DataLoader(dataset, batch_size=len(dataset))
-        self.device = torch.device("cpu")
+        self.device = torch.device("cuda")
+        self.model = model.to(self.device)
 
         self.loss_func = loss_func
 
@@ -25,6 +24,7 @@ class BroadnessMeasurer(object):
         Start measuring
         :param std_list: the list of standard deviations used for noise sampling
         :param num_itrs: the number of alterations per standard deviations
+        :param normalize: if the mean of this iteration's losses are subtracted from every loss
         :return: the measured losses and loss deltas
         """
         losses_measured = []
@@ -76,7 +76,7 @@ class BroadnessMeasurer(object):
                 result = self.gt_func(label).to(self.device)
             else:
                 result = label
-            loss = self.loss_func(predicted_result.view(-1), result.float())
+            loss = self.loss_func(predicted_result, result.float())
             loss_train.append(loss.item())
         return np.mean(loss_train)
 
