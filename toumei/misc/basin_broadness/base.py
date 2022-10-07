@@ -76,7 +76,8 @@ class LinearNode(nn.Module):
         :param x: the input tensor
         :return: the hidden state/output
         """
-        return self.module.forward(x)
+        m = nn.Sigmoid()
+        return m(self.module.forward(x))
 
     def forward_pass(self):
         """
@@ -217,7 +218,7 @@ class LinearNode(nn.Module):
         Q, L, Q_INV = self.orthogonal_basis
 
         if not isinstance(self.next, EndNode):
-            Q_n, L_n, _ = self.next.orthogonal_basis
+            Q_n, L_n, Q_n_INV = self.next.orthogonal_basis
             ortho_weights = Q_n @ self.params @ Q_INV
         else:
             ortho_weights = self.params @ Q_INV
