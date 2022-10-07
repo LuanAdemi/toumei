@@ -75,4 +75,4 @@ class MLPGraph(ModelGraph):
                     w = value[next_neuron, current_neuron].detach().abs().item()
                     v = value[next_neuron, current_neuron].detach().item()
                     num_edges_prev = len(self.edges.items())
-                    self.add_edge(current_node, next_node, weight=w, title=v, value=w)
+                    self.add_edge(current_node, next_node, weight=w, title=v, value=v)

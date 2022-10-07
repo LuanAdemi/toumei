@@ -14,7 +14,7 @@ Xs = torch.Tensor([[0., 0.],
 y = torch.Tensor([0., 1., 1., 0.]).reshape(Xs.shape[0], 1)
 
 ep = 40000
-network = SimpleMLP(2, 16, 1, activation=nn.Sigmoid()).to(device)
+network = SimpleMLP(2, 3, 1, activation=nn.Sigmoid()).to(device)
 loss_fc = torch.nn.MSELoss()
 opt = torch.optim.Adam(lr=1e-3, params=network.parameters())
 
@@ -50,4 +50,4 @@ for i in range(ep):
     if i % 500 == 0:
         print(f'Epoch: {i} completed')
 
-torch.save(network.state_dict(), "../../../toumei/misc/basin_broadness/xor16.pth")
+torch.save(network.state_dict(), "../../../toumei/misc/basin_broadness/xor00.pth")
