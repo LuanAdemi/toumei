@@ -24,6 +24,6 @@ class SimpleMLP(nn.Module):
         self.act = activation
 
     def forward(self, x):
-        for layer in self.layers[:-1]:
+        for layer in self.layers:
             x = self.act(layer(x))
-        return self.layers[-1](x)
+        return x

@@ -34,11 +34,12 @@ class Task(ABC):
         return "task"
 
     def change_params(self, random_goals=True):
-        for i in range(len(self.mvg_parameters)):
-            if random_goals:
-                self.mvg_parameters[i] = rand.randint(self.lower_bound, self.upper_bound)
-            else:
-                self.mvg_parameters[i] *= -1 ** i
+        if self.mvg:
+            for i in range(len(self.mvg_parameters)):
+                if random_goals:
+                    self.mvg_parameters[i] = rand.randint(self.lower_bound, self.upper_bound)
+                else:
+                    self.mvg_parameters[i] *= -1 ** i
 
 
 class XorOperator(Task):
@@ -49,7 +50,7 @@ class XorOperator(Task):
             result = 0
             for i, param in enumerate(batch):
                 # incoming tensors are float
-                result = result ^ param.int() * self.mvg_parameters[i]
+                result = result ^ param.int() * int(self.mvg_parameters[i])
             results.append(result)
         return torch.Tensor(results)
 

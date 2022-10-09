@@ -6,7 +6,7 @@ from torchvision.transforms import ToTensor
 
 
 class MNISTDataset(Dataset):
-    def __init__(self, device=torch.device('cpu'), n_numbers=2, length=6500):
+    def __init__(self, device=torch.device('cuda'), n_numbers=2, length=6500):
         super(MNISTDataset, self).__init__()
 
         self.mnist_data = MNIST(root='../data', train=True, transform=ToTensor(), download=True)

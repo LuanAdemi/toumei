@@ -1,8 +1,5 @@
-from copy import deepcopy
-
-import torch.nn as nn
 import torch
-
+import torch.nn as nn
 
 """
 This script provides the base classes for the feature orthogonalisation algorithm.
@@ -69,6 +66,9 @@ class LinearNode(nn.Module):
         # the next node
         self.next = nxt
 
+        self.Q = None
+        self.L = None
+
     def parameters(self, recurse: bool = True):
         return self.module.parameters()
 
@@ -79,7 +79,8 @@ class LinearNode(nn.Module):
         :param x: the input tensor
         :return: the hidden state/output
         """
-        return self.module.forward(x)
+        m = nn.Sigmoid()
+        return m(self.module.forward(x))
 
     def forward_pass(self):
         """
@@ -113,11 +114,31 @@ class LinearNode(nn.Module):
     @property
     def params(self):
         """
-        A matrix containing the weights and the biases as an additional row
+        A matrix containing the parameters of the layer.
+
+        This is essentially the weight matrix with one additional column and row like so
+
+        W_11 . . . W_1j B_1
+         .   .           .
+         .      .        .
+         .         .     .
+        W_i1 . . . W_ij B_i
+        0    . . .   0   1 < One-Row
+                         ^
+                        Bias
+
+        This creates a new neuron for the bias, which can be used as a vector (function) for the hilbert space
 
         :return: the parameter matrix
         """
-        return torch.cat([self.weights, self.biases.unsqueeze(1)], dim=1)
+        weights = self.weights
+        biases = self.biases.unsqueeze(1)
+
+        params = torch.cat([weights, biases], dim=1)
+        one_row = torch.tensor([0 for _ in range(weights.shape[1])] + [1]).unsqueeze(0)
+        if not isinstance(self.next, EndNode):
+            params = torch.cat([params, one_row], dim=0)
+        return params
 
     @property
     def activations(self):
@@ -166,12 +187,14 @@ class LinearNode(nn.Module):
 
         :return: V, diag(L), V^-1
         """
-        # compute the eigenvalues and the eigenvectors of the hessian
-        L, Q = torch.linalg.eig(self.activation_matrix)
+
+        if self.Q is None:
+            # compute the eigenvalues and the eigenvectors of the hessian
+            self.L, self.Q = torch.linalg.eig(self.activation_matrix)
 
         # the resulting diagonal matrix with the eigenvalues on the diagonal
 
-        return Q.real, L.real, torch.linalg.inv(Q).real
+        return self.Q.real, self.L.real, torch.linalg.inv(self.Q).real
 
     @property
     def orthogonal_basis(self):
@@ -192,15 +215,21 @@ class LinearNode(nn.Module):
 
         The weight matrix is transformed as follows:
 
-        W' = D @ W_i @ Q_i^-1 @ Q_i
+        W' = W_i @ Q_i^-1 @ Q_i
 
         :return: The orthogonal parameters for this node
         """
         # collect the orthogonal basis of the current node
         Q, L, Q_INV = self.orthogonal_basis
 
-        # note: 1-d tensors are for some reason ALWAYS row vectors, so this transpose hack is needed for rescaling
-        ortho_weights = (torch.diag(L) @ (self.params @ Q_INV @ Q).T).T
+        L[torch.logical_and(L >= 0, L <= 1e-4)] = 0
+        L[torch.logical_and(L <= 0, L >= -1e-4)] = 0
+
+        if not isinstance(self.next, EndNode):
+            Q_n, L_n, Q_n_INV = self.next.orthogonal_basis
+            ortho_weights = Q_n @ self.params @ Q_INV @ torch.sqrt(torch.diag(L))
+        else:
+            ortho_weights = self.params @ Q_INV @ torch.sqrt(torch.diag(L))
 
         ortho_module = nn.Linear(*ortho_weights.T.shape, bias=False)
 
@@ -226,8 +255,7 @@ class MLPWrapper(nn.Module):
         self.loss_func = loss_func
 
         # the model
-        self.model = deepcopy(model)
-        self.p_model = model
+        self.model = model
 
         # a container for the single linked array list
         self.nodes = []
@@ -275,7 +303,7 @@ class MLPWrapper(nn.Module):
         loss = self.loss_func(out, self.Y)
         return out, loss
 
-    def orthogonal_model(self, inplace=False):
+    def orthogonal_model(self, act=nn.Sigmoid()):
         """
         This is the main algorithm.
         It collects the orthogonal features of each node (layer) and builds the corresponding orthogonal model.
@@ -284,25 +312,20 @@ class MLPWrapper(nn.Module):
         :return: the orthogonal model
         """
 
-        if inplace:
-            ortho_model = self.model
-        else:
-            ortho_model = deepcopy(self.model)
+        modules = []
 
         current_node = 0
 
         # iterate over each module of the orthogonal model
-        for name, module in ortho_model.named_modules():
+        for name, module in self.model.named_children():
             if isinstance(module, nn.Linear):
                 # set the parameters to the orthogonal ones
-                ortho_param = self[current_node].orthogonal_parameters
-
-                weights = next(module.parameters())
-                weights.data = ortho_param
-
+                ortho_module, L = self[current_node].orthogonalise()
+                modules.append(ortho_module)
                 current_node += 1
+                modules.append(act)
 
-        return ortho_model
+        return nn.Sequential(*modules)
 
     def __getitem__(self, item):
         """

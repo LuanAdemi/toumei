@@ -2,14 +2,11 @@ from copy import deepcopy
 
 import torch
 import torch.nn as nn
+from pyvis.network import Network
 from torch import autograd
 
-from toumei.models import SimpleMLP
-from toumei.probe import print_modules
-
 from toumei.mlp.mlp_graph import MLPGraph
-
-from pyvis.network import Network
+from toumei.models import SimpleMLP
 
 
 class StartNode(nn.Module):
@@ -132,7 +129,6 @@ class LinearNode(nn.Module):
 
         # first derivative
         dl_df = autograd.grad(loss, n_out, create_graph=True)[0]
-
         # second derivative for one output (this should algebraically be the same for every output)
         d2l_d2f = autograd.grad(dl_df[0][0], n_out, create_graph=True)[0].view(-1)[0]
 
