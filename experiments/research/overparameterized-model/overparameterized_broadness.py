@@ -17,9 +17,9 @@ class OurBroadnessMeasurer(BroadnessMeasurer):
     # on single elements?), and I don't know if one is more correct than the
     # other.
     def __init__(self, model, dataset, loss_func, gt_func=None):
-        self.model = model
         self.dataLoader = dataset
         self.device = torch.device("cpu")
+        self.model = model.to(self.device)
 
         self.loss_func = loss_func
 
