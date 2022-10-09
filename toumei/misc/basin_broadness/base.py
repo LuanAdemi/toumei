@@ -66,6 +66,9 @@ class LinearNode(nn.Module):
         # the next node
         self.next = nxt
 
+        self.Q = None
+        self.L = None
+
     def parameters(self, recurse: bool = True):
         return self.module.parameters()
 
@@ -184,12 +187,14 @@ class LinearNode(nn.Module):
 
         :return: V, diag(L), V^-1
         """
-        # compute the eigenvalues and the eigenvectors of the hessian
-        L, Q = torch.linalg.eig(self.activation_matrix)
+
+        if self.Q is None:
+            # compute the eigenvalues and the eigenvectors of the hessian
+            self.L, self.Q = torch.linalg.eig(self.activation_matrix)
 
         # the resulting diagonal matrix with the eigenvalues on the diagonal
 
-        return Q.real, L.real, torch.linalg.inv(Q).real
+        return self.Q.real, self.L.real, torch.linalg.inv(self.Q).real
 
     @property
     def orthogonal_basis(self):
@@ -217,11 +222,14 @@ class LinearNode(nn.Module):
         # collect the orthogonal basis of the current node
         Q, L, Q_INV = self.orthogonal_basis
 
+        L[torch.logical_and(L >= 0, L <= 1e-4)] = 0
+        L[torch.logical_and(L <= 0, L >= -1e-4)] = 0
+
         if not isinstance(self.next, EndNode):
             Q_n, L_n, Q_n_INV = self.next.orthogonal_basis
-            ortho_weights = Q_n @ self.params @ Q_INV
+            ortho_weights = Q_n @ self.params @ Q_INV @ torch.sqrt(torch.diag(L))
         else:
-            ortho_weights = self.params @ Q_INV
+            ortho_weights = self.params @ Q_INV @ torch.sqrt(torch.diag(L))
 
         ortho_module = nn.Linear(*ortho_weights.T.shape, bias=False)
 
