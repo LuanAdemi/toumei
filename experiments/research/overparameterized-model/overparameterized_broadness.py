@@ -5,26 +5,6 @@ import torch.optim as optim
 
 from toumei.misc.model_broadness import BroadnessMeasurer
 
-class OurBroadnessMeasurer(BroadnessMeasurer):
-    # The parent class is basically the same as this, but with
-    #
-    #     self.dataLoader = DataLoader(dataset, batch_size=len(dataset))
-    #
-    # instead. Which runs fine but gets different results on the input we use.
-    # When calculating loss, it puts every data point in a single batch instead
-    # of enumerating over them individually. I don't really know why this is
-    # different (MSELoss on a batch should be the same as the mean of MSELosses
-    # on single elements?), and I don't know if one is more correct than the
-    # other.
-    def __init__(self, model, dataset, loss_func, gt_func=None):
-        self.dataLoader = dataset
-        self.device = torch.device("cpu")
-        self.model = model.to(self.device)
-
-        self.loss_func = loss_func
-
-        self.gt_func = gt_func
-
 class Net_54(nn.Module):
     def __init__(self):
         super().__init__()
@@ -88,10 +68,10 @@ def main():
 
     train(net, criterion, optimizer)
 
-    measurer = OurBroadnessMeasurer(net,
-                                    list(zip(data, labels)),
-                                    torch.nn.MSELoss())
-    _, deltas = measurer.run([x * 0.0001 for x in range(10)], num_itrs=20)
+    measurer = BroadnessMeasurer(net,
+                                 list(zip(data, labels)),
+                                 torch.nn.MSELoss())
+    _, deltas = measurer.run([x * 0.0001 for x in range(10)], num_itrs=10000)
     print(deltas)
 
 if __name__ == '__main__':
