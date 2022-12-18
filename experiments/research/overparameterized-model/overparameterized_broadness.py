@@ -1,3 +1,4 @@
+import argparse
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -60,7 +61,14 @@ def train(net, criterion, optimizer):
             last_loss = val
 
 def main():
-    torch.manual_seed(0)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--seed', type=int, default=0)
+
+    args = parser.parse_args()
+
+    # Would "generate and print random seed" be useful instead of defaulting to
+    # 0?
+    torch.manual_seed(args.seed)
 
     net = Net_9()
     criterion = nn.MSELoss()
