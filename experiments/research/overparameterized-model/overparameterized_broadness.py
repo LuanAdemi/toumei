@@ -3,6 +3,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 from toumei.misc.model_broadness import BroadnessMeasurer
 
@@ -63,6 +65,7 @@ def train(net, criterion, optimizer):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--seed', type=int, default=0)
+    parser.add_argument('--graph', action='store_true')
 
     args = parser.parse_args()
 
@@ -76,11 +79,33 @@ def main():
 
     train(net, criterion, optimizer)
 
-    measurer = BroadnessMeasurer(net,
-                                 list(zip(data, labels)),
-                                 torch.nn.MSELoss())
-    _, deltas = measurer.run([x * 0.0001 for x in range(10)], num_itrs=10000)
-    print(deltas)
+    if args.graph:
+        steps = [x/100 for x in range(0, 101, 1)]
+        points = [[[x, y] for x in steps] for y in steps[::-1]]
+        results = net(torch.tensor(points)).detach().numpy()
+
+        fix, ax = plt.subplots()
+        im = ax.imshow(results)
+
+        # The range of values will be roughly (epsilon, 1-epsilon), so that's
+        # what gets assigned colors by default. It looks fine, but means the
+        # colorbar doesn't get values at 0 and 1. set_clim fixes that.
+        im.set_clim(0, 1)
+        cbar = ax.figure.colorbar(im, ax=ax)
+
+        tick_points = list(range(0, 101, 10))
+        tick_vals = [x/100 for x in tick_points]
+        ax.set_xticks(tick_points, tick_vals)
+        ax.set_yticks(tick_points, tick_vals[::-1])
+
+        plt.show()
+    else:
+        measurer = BroadnessMeasurer(net,
+                                     list(zip(data, labels)),
+                                     torch.nn.MSELoss())
+        _, deltas = measurer.run([x * 0.0001 for x in range(10)],
+                                 num_itrs=10000)
+        print(deltas)
 
 if __name__ == '__main__':
     main()
